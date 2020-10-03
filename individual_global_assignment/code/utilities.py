@@ -23,16 +23,18 @@ class SCPInstance:
         # Read file lines
         scp_file_lines = list()
         for i, line in enumerate(scp_instance_textfile):
-            l = [e.strip() for e in line]
-            scp_file_lines.append(l)
+            # l = [e.remove('\n') for e in line]
+            # l = [e.remove('') for e in l]
+            scp_file_lines.append(line.split(" "))
 
         # Close the file
         scp_instance_textfile.close()
 
         # Perform some data cleaning
-        # for i, line in enumerate(scp_file_lines):
-            # line.remove('\n')
-            # line.remove('')
+        for i, line in enumerate(scp_file_lines):
+            # print(line)
+            line.remove('\n')
+            line.remove('')
 
         # Let's start by storing some properties
         # Number of Subsets
@@ -63,7 +65,7 @@ class SCPInstance:
         for i, line in enumerate(scp_file_lines):
             if len(all_subsets) < self.scp_number_of_subsets:
                 if i == subset_index:
-                    subset_size = int(line)
+                    subset_size = int(line[0])
                     # print(subset_size)
                     
                 elif i > subset_index:
@@ -75,7 +77,7 @@ class SCPInstance:
                     else:
                         all_subsets.append(np.array(subset, dtype=int))
                         subset_index = i
-                        subset_size = int(line)
+                        subset_size = int(line[0])
                         print(subset_size)
                         subset = list()
         
