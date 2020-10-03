@@ -99,6 +99,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     # Status variables
     # Elements that we need to cover: we can update this list along the way
     elements_to_be_covered = list(np.unique(set_covering_problem_instance.scp_instance_attribute_map))
+    number_of_elements_to_be_covered = len(elements_to_be_covered)
     # print(elements_to_be_covered)
     
     # Number of elements that we already covered: will be updated along the way
@@ -132,7 +133,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     iteration = 1
 
     # The program must continue until we cover all the elements
-    while nr_of_elements_covered != len(elements_to_be_covered):
+    while nr_of_elements_covered < number_of_elements_to_be_covered:
         # Print current iteration
         print("Iteration {}".format(iteration))
 
