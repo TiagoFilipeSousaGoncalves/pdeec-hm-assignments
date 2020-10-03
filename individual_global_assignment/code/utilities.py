@@ -132,7 +132,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     iteration = 1
 
     # The program must continue until we cover all the elements
-    while nr_of_elements_covered < len(elements_to_be_covered):
+    while nr_of_elements_covered != len(elements_to_be_covered):
         # Print current iteration
         print("Iteration {}".format(iteration))
 
