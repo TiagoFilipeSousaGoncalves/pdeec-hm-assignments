@@ -10,6 +10,7 @@ from utilities import SCPInstance
 def test_SCPInstances(data_dir = '../data', scp_instances_dir = 'scp_instances'):
     # Get file list
     scp_instances_list = os.listdir(os.path.join(data_dir, scp_instances_dir))
+    scp_instances_list = [i for i in scp_instances_list if not i.startswith('.')]
 
     # Go trough list
     for i, scp_instance in enumerate(scp_instances_list):
@@ -17,8 +18,12 @@ def test_SCPInstances(data_dir = '../data', scp_instances_dir = 'scp_instances')
 
         if scp_instance.scp_number_of_attributes != scp_instance.scp_instance_attribute_map.shape[0]:
             print("Error in number of attributes in SCPInstance {}.".format(scp_instance.scp_instance_filename))
+
+            return 1
         
-        elif len(test.scp_instance_all_subsets) != test.scp_number_of_subsets:
+        elif len(scp_instance.scp_instance_all_subsets) != scp_instance.scp_number_of_subsets:
             print("Error in number of subsets in SCPInstance {}.".format(scp_instance.scp_instance_filename))
+
+            return 2
     
     return 0
