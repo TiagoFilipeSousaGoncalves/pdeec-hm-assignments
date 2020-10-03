@@ -169,8 +169,10 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Append this set to the solution
         current_solution.append(selected_set)
 
-        # Update the cost: we add 1 per set that is added to the solution
-        current_cost = len(current_solution)
+        # Update the cost: we add set lenght per set that is added to the solution
+        current_cost = 0
+        for solution_set in current_solution:
+            current_cost += len(set_covering_problem_instance.scp_instance_all_subsets[solution_set])
 
         # Remove this set from candidate sets
         candidate_sets.remove(selected_set)
