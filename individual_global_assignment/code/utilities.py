@@ -202,7 +202,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Some debugging prints
         print("Number of Elements Already Covered: {}".format(nr_of_elements_covered))
         print("Current Cost: {}".format(current_cost))
-        print("Current Solution")
+        print("Current Solution {}".format(current_solution))
         iteration += 1
 
     # Select if we apply redundancy elimination
