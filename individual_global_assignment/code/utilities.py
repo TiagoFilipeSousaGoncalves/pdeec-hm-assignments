@@ -98,8 +98,9 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
 
     # Status variables
     # Elements that we need to cover: we can update this list along the way
-    elements_to_be_covered = list(np.unique(set_covering_problem_instance.scp_instance_attribute_map))
-    number_of_elements_to_be_covered = len(elements_to_be_covered)
+    elements_to_be_covered = set_covering_problem_instance.scp_instance_attribute_map
+    # elements_to_be_covered = list(np.unique(set_covering_problem_instance.scp_instance_attribute_map))
+    number_of_elements_to_be_covered = set_covering_problem_instance.scp_instance_attribute_map.shape[0]
     # print(elements_to_be_covered)
     
     # Number of elements that we already covered: will be updated along the way
@@ -187,8 +188,9 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Let's check the elements that are present in this subset
         for element_idx in selected_set_array:
             element = set_covering_problem_instance.scp_instance_attribute_map[element_idx]
-            if element not in selected_set_elements:
-                selected_set_elements.append(element)
+            selected_set_elements.append(element)
+            # if element not in selected_set_elements:
+                # selected_set_elements.append(element)
         
         # Now we check if this elements are available in the remaining elements to be added to the final solution
         # We update the number of elements that are already covered by this set
@@ -199,8 +201,10 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         
         # We can also update the columns of the "attribute map" and deactivate/remove the ones that contain the same element
         for col_idx in candidate_columns:
-            if set_covering_problem_instance.scp_instance_attribute_map[col_idx] in selected_set_elements:
+            if col_idx in selected_set_array:
                 candidate_columns.remove(col_idx)
+            # if set_covering_problem_instance.scp_instance_attribute_map[col_idx] in selected_set_elements:
+                # candidate_columns.remove(col_idx)
         
         # Some debugging prints
         print("Number of Elements Already Covered: {}".format(nr_of_elements_covered))
