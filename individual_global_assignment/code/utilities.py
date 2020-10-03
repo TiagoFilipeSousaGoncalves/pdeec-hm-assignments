@@ -79,4 +79,7 @@ class SCPInstance:
                         print(subset_size)
                         subset = list()
         
+        # Append last subset
+        all_subsets.append(np.array(subset, dtype=int))
+        # Assign this variable to an attribute variable of the instance 
         self.scp_instance_all_subsets = all_subsets
