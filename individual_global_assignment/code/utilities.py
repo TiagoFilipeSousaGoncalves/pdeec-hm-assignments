@@ -98,7 +98,8 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
 
     # Status variables
     # Elements that we need to cover: we can update this list along the way
-    elements_to_be_covered = set_covering_problem_instance.scp_instance_attribute_map
+    elements_to_be_covered = [i+1 for i in range(set_covering_problem_instance.scp_instance_attribute_map.shape[0])]
+    # elements_to_be_covered = list(set_covering_problem_instance.scp_instance_attribute_map)
     # elements_to_be_covered = list(np.unique(set_covering_problem_instance.scp_instance_attribute_map))
     number_of_elements_to_be_covered = set_covering_problem_instance.scp_instance_attribute_map.shape[0]
     # print(elements_to_be_covered)
@@ -107,13 +108,16 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     nr_of_elements_covered = 0 
     # print(nr_of_elements_covered)
 
-    # Number of sets that cover an element: each index is an element and the value is the number of sets
+    # TODO: Number of sets that cover an element: each index is an element and the value is the number of sets
     nr_of_sets_that_cover_an_element = [0 for i in range(len(elements_to_be_covered))]
     # print(nr_of_sets_that_cover_an_element)
 
     # Columns that are eligible for use: this is turned off when we choose a set that contains an element
-    candidate_columns = [i for i in range(set_covering_problem_instance.scp_instance_attribute_map.shape[0])]
+    # candidate_columns = [i+1 for i in range(set_covering_problem_instance.scp_instance_attribute_map.shape[0])]
     # print(candidate_columns)
+
+    # Columns already used
+    elements_already_covered = list()
 
     # Sets that are available for further use
     candidate_sets = [i for i, _ in enumerate(set_covering_problem_instance.scp_instance_all_subsets)]
@@ -140,6 +144,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
 
         # Step 1: Pick randomly a still uncovered element
         uncovered_element = np.random.choice(elements_to_be_covered)
+        # print(uncovered_element)
 
         # Step 2: Check which sets contain this element
         # Go through candidate sets
@@ -152,16 +157,19 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
             current_set = set_covering_problem_instance.scp_instance_all_subsets[set_idx].copy()
             # Check if this set contains the index of the uncovered element
             # The dataset contains indices that start in 1, we should "Pythonize" this
-            current_set = [i-1 for i in current_set]
+            # current_set = [i-1 for i in current_set]
             # Now, we check if the current set has an index that point to the element
             for e_idx in current_set:
-                # Check if this indice matters in this iteration by evaluating candidate columns
-                if e_idx in candidate_columns:
+                # TODO: Check if this indice matters in this iteration by evaluating candidate columns
+                # if e_idx in candidate_columns:
+                if e_idx == uncovered_element:
+                    if set_idx not in sets_that_contain_un_element:
+                        sets_that_contain_un_element.append(set_idx)
                     # Now check if any element index in the current set corresponds to the uncovered element
-                    if set_covering_problem_instance.scp_instance_attribute_map[e_idx] == uncovered_element:
+                    # if set_covering_problem_instance.scp_instance_attribute_map[e_idx] == uncovered_element:
                         # We append the set_idx to the list of sets that contain the element
-                        if set_idx not in sets_that_contain_un_element:
-                            sets_that_contain_un_element.append(set_idx)
+                        # if set_idx not in sets_that_contain_un_element:
+                            # sets_that_contain_un_element.append(set_idx)
             
         
         # With the possible list of sets that contain an element we are now able to randomly choose a set
@@ -170,7 +178,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Append this set to the solution
         current_solution.append(selected_set)
 
-        # Update the cost: we add set lenght per set that is added to the solution
+        # TODO: Update the cost: we add set lenght per set that is added to the solution
         current_cost = 0
         for solution_set in current_solution:
             current_cost += len(set_covering_problem_instance.scp_instance_all_subsets[solution_set])
@@ -179,37 +187,61 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         candidate_sets.remove(selected_set)
 
         # Let's update the number of elements to be covered and the columns in candidate columns
-        # We update first the number of elements covered
-        selected_set_elements = list()
+        # TODO: We update first the number of elements covered
+        # selected_set_elements = list()
         # Let's choose the subset
         selected_set_array = set_covering_problem_instance.scp_instance_all_subsets[selected_set].copy()
         # We "Pythonize" the subset array of elements
-        selected_set_array = [i-1 for i in selected_set_array]
+        # selected_set_array = [i-1 for i in selected_set_array]
         # Let's check the elements that are present in this subset
-        for element_idx in selected_set_array:
-            element = set_covering_problem_instance.scp_instance_attribute_map[element_idx]
-            selected_set_elements.append(element)
+
+        # TODO: Check this later
+        # for element_idx in selected_set_array:
+            # element = set_covering_problem_instance.scp_instance_attribute_map[element_idx]
+            # selected_set_elements.append(element)
             # if element not in selected_set_elements:
                 # selected_set_elements.append(element)
         
         # Now we check if this elements are available in the remaining elements to be added to the final solution
         # We update the number of elements that are already covered by this set
-        for element in selected_set_elements:
+        # for element in selected_set_elements:
+        for element in selected_set_array:
             if element in elements_to_be_covered:
                 elements_to_be_covered.remove(element)
                 nr_of_elements_covered += 1
         
-        # We can also update the columns of the "attribute map" and deactivate/remove the ones that contain the same element
-        for col_idx in candidate_columns:
-            if col_idx in selected_set_array:
-                candidate_columns.remove(col_idx)
+        # TODO: We can also update the columns of the "attribute map" and deactivate/remove the ones that contain the same element
+        for element in selected_set_array:
+            if element not in elements_already_covered:
+                elements_already_covered.append(element)
+            # if element in candidate_columns:
+                # candidate_columns.remove(element)
+        # for col_idx in candidate_columns:
+            # if col_idx in selected_set_array:
+                # candidate_columns.remove(col_idx)
             # if set_covering_problem_instance.scp_instance_attribute_map[col_idx] in selected_set_elements:
                 # candidate_columns.remove(col_idx)
+        
+        # TODO: The cost function may be a function of the sum of individual costs of the elements in our set minus the remaining elements
+        # cost_of_our_elements = 0
+        # for subset in current_solution:
+            # for element in set_covering_problem_instance.scp_instance_all_subsets[subset]:
+                # cost_of_our_elements += set_covering_problem_instance.scp_instance_attribute_map[element-1]
+        
+        # cost_of_remaining_elements = 0
+        # for element in set_covering_problem_instance.scp_instance_attribute_map:
+            # cost_of_remaining_elements += element
+            # cost_of_remaining_elements += set_covering_problem_instance.scp_instance_attribute_map[element-1]
+        
+        current_cost = abs(current_cost - len(elements_already_covered))
+
         
         # Some debugging prints
         print("Number of Elements Already Covered: {}".format(nr_of_elements_covered))
         print("Current Cost: {}".format(current_cost))
-        print("Current Solution {}".format(current_solution))
+        # print("Current Solution {}".format(current_solution))
+        # print("Uncovered Elements: {}".format(elements_to_be_covered))
+        # print("Candidate Columns: {}".format(candidate_columns))
         iteration += 1
 
     # Select if we apply redundancy elimination
