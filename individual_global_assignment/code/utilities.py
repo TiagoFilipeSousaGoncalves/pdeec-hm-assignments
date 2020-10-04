@@ -195,7 +195,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
                     possible_columns_costs_effectiveness.append(np.inf)
         
         # We now have the cost effectiveness of each column, so we should select the one with lower costs
-        selected_column = np.argmin(possible_columns_costs_effectiveness)
+        selected_column = possible_columns[np.argmin(possible_columns_costs_effectiveness)]
         
         # We can append this row to the solution
         solution.append(selected_column)
