@@ -97,217 +97,150 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     # Set random seed
     np.random.seed(seed=random_seed)
 
-    # Status variables
-    # Rows that we need to cover: we can update this list along the way
-    rows_to_be_covered = [i for i in range(set_covering_problem_instance.scp_number_of_rows)]
-    print("Rows that we need to cover: {}".format(rows_to_be_covered))
-    # Number of rows that we still need to cover
-    number_of_rows_to_be_covered = set_covering_problem_instance.scp_number_of_rows
-    print("Number fo rows that we need to cover: {}".format(number_of_rows_to_be_covered))
+    # Build Row X Column Matrix
+    problem_matrix = np.zeros((set_covering_problem_instance.scp_number_of_rows, set_covering_problem_instance.scp_number_of_columns), dtype=int)
+    # Fill Problem Matrix
+    for row_idx, row in enumerate(set_covering_problem_instance.scp_instance_all_rows):
+        for column in row:
+            problem_matrix[row_idx, column-1] = 1
+    # De bugging print
+    # print(problem_matrix)
+    # print(np.where(problem_matrix==1))
+    # print(problem_matrix.shape)
+
+
+    # Set some control variables
+    # Rows covered
+    rows_covered = list()
     
-    # Number of elements that we already covered: will be updated along the way
-    nr_of_rows_covered = 0 
-    print("Number of rows already covered: {}".format(nr_of_rows_covered))
-
-    # Number of sets that cover an element: each index is an element and the value is the number of sets
-    nr_of_columns_that_cover_a_row = [0 for i in range(len(rows_to_be_covered))]
-    for row, columns_that_cover_row in enumerate(set_covering_problem_instance.scp_instance_all_rows):
-        nr_of_columns_that_cover_a_row[row] = len(columns_that_cover_row)
-    print("Number of columns that cover each row: {}".format(nr_of_columns_that_cover_a_row))
-
-    # Columns that are eligible for use: this is turned off when we choose a set that contains an element
-    candidate_columns = [i+1 for i in range(set_covering_problem_instance.scp_instance_column_costs.shape[0])]
-    print("Candidate Columns {}".format(candidate_columns))
-
-    # Columns already used
-    rows_already_covered = list()
-
-    # Sets that are available for further use
-    # candidate_rows = [i for i, _ in enumerate(set_covering_problem_instance.scp_instance_all_subsets)]
-    # print("Candidate rows {}".format(candidate_sets))
-
-    # The current solution cost: this is an unweighted setting so each set has the value of 1. We want to minimized the number of sets here.
-    current_cost = 0
-    # print(current_cost)
-
-    # The list of sets to be added (we add the index of each set that is part of the SCPInstance object)
-    current_solution = list()
-    # print(current_solution)
-
-    # Begin CH1
-    print("Starting CH1 Algorithm...")
+    # Number of Columns that Cover a Row
+    number_of_columns_that_cover_a_row = list()
+    # Let's compute the initial number of columns that cover each row
+    for row in range(problem_matrix.shape[0]):
+        number_of_columns_that_cover_a_row.append(np.sum(problem_matrix[row, :]))
+    # Debugging point
+    # print(number_of_columns_that_cover_a_row)
+    # print(len(number_of_columns_that_cover_a_row))
     
-    # Iteration counter for debugging purposes
-    iteration = 1
+    # Columns to be considered candidates to be added
+    candidate_columns_to_be_added = [i for i in range(set_covering_problem_instance.scp_number_of_columns)]
+    # Debugging points
+    # print(candidate_columns_to_be_added)
+    # print(len(candidate_columns_to_be_added))
 
-    # The program must continue until we cover all the rows
-    while nr_of_rows_covered < number_of_rows_to_be_covered:
-        # Print current iteration
-        print("Iteration {}".format(iteration))
+    # Solution
+    solution = list()
 
-        # Step 1: Pick randomly a still uncovered row
-        uncovered_row = np.random.choice(rows_to_be_covered)
-        print("Uncovered row: {}".format(uncovered_row))
+    # Begin CH1 Algorithm
+    while len(rows_covered) < problem_matrix.shape[0]:
+        # Step 1: Pick a random row
+        possible_rows = [i for i in range(problem_matrix.shape[0]) if i not in rows_covered]
+        # Debugging point
+        # print(len(possible_rows))
+        chosen_row = np.random.choice(possible_rows)
 
-        # Step 2: Check which columns contain this row
-        # Go through candidate columns
-        # Create a temp list to update (in each iteration it is reset)
-        # columns_that_contain_un_element = list()
-        columns_that_contain_un_row = set_covering_problem_instance.scp_instance_all_rows[uncovered_row].copy()
-        # Check it is part of candidate columns
-        columns_that_contain_un_row = [i for i in columns_that_contain_un_row if i in candidate_columns]
+        # Step 2: Discover all the columns that contain this row
+        possible_columns = list()
+        for col_idx, column in enumerate(problem_matrix[chosen_row]):
+            # Column must be 1 and it has to be in the list of candidate columns 
+            if column == 1 and (col_idx in candidate_columns_to_be_added):
+                possible_columns.append(col_idx)
+        # Debugging print
+        # print(len(possible_columns)==number_of_columns_that_cover_a_row[chosen_row])
+        # break
+
+        # Step 3: Compute Cost Effectiveness
+        # We create a list to append the cost effectiveness per column candidate
+        possible_columns_costs_effectiveness = list()
+        # Go trough possible columns
+        for poss_col in possible_columns:
+            # We must see the differences between our current solution and a possible chosen column to evaluate the gain
+            if len(solution) == 0:
+                # Check per column the number of rows it adds
+                rows_this_column_adds = list()
+                for row_idx, row in enumerate(problem_matrix[:, poss_col]):
+                    if row == 1:
+                        rows_this_column_adds.append(row_idx)
+                # In this case our solution contains zero columns and therefore zero rows, so we will evaluate directly the col that has much more rows for the less cost
+                difference_of_this_col_to_solution = len(rows_this_column_adds)
+                # To avoid divide by 0
+                if difference_of_this_col_to_solution > 0:
+                    effective_cost = set_covering_problem_instance.scp_instance_column_costs[poss_col] / difference_of_this_col_to_solution
+                    possible_columns_costs_effectiveness.append(effective_cost)
+                else:
+                    possible_columns_costs_effectiveness.append(np.inf)
+            else:
+                # Check per column th number of rows it adds
+                rows_this_column_adds = list()
+                for row_idx, row in enumerate(problem_matrix[:, poss_col]):
+                    if row == 1:
+                        rows_this_column_adds.append(row_idx)
+                # Here, our len(solution) > 0 so we have to analyse the difference between a possible column and the current solution
+                solution_rows = list()
+                for s_col in solution:
+                    for row_idx, row in enumerate(problem_matrix[:, s_col]):
+                        if row == 1 and (row_idx not in solution_rows):
+                            solution_rows.append(row_idx)
+                
+                # Check differences between that rows that we already cover and the possibilities
+                # Evalute difference between possible column and our solution
+                difference_between_column_and_curr_solution = [i for i in rows_this_column_adds if i not in solution_rows]
+                # This will enter the formula of cost effectiveness
+                difference_of_this_col_to_solution = len(difference_between_column_and_curr_solution)
+                # To avoid divide by 0
+                if difference_of_this_col_to_solution > 0:
+                    effective_cost = set_covering_problem_instance.scp_instance_column_costs[poss_col] / difference_of_this_col_to_solution
+                    possible_columns_costs_effectiveness.append(effective_cost)
+                else:
+                    possible_columns_costs_effectiveness.append(np.inf)
         
-        # Compute Cost Effectiveness of each column (evaluate the number of rows that each column contains)
-        # First, we need to compute the rows that are covered by the solution
-        if len(current_solution) > 0:
-            covered_rows_list_per_column = [list() for i, _ in enumerate(columns_that_contain_un_row)]
-            # Iterate through the rows of the column in the columns list
-            for c_i, column in enumerate(columns_that_contain_un_row):
-                for r_i, row in enumerate(rows_to_be_covered):
-                    if column in set_covering_problem_instance.scp_instance_all_rows[row]:
-                        covered_rows_list_per_column[c_i].append(r_i)
-            
-            # Compare with the rows covered by our solution
-            difference_between_column_sets = [0 for i, _ in enumerate(columns_that_contain_un_row)]
-            for c_i, covered_rows in enumerate(covered_rows_list_per_column):
-                for row in covered_rows:
-                    if row not in rows_already_covered:
-                        difference_between_column_sets[c_i] += 1
-            
-            # Cost effectivenes per column
-            costs_effectiveness = [0 for i, _ in enumerate(difference_between_column_sets)]
-            for c_i, column in enumerate(columns_that_contain_un_row):
-                column_cost = set_covering_problem_instance.scp_instance_column_costs[column-1]
-                effective_cost = column_cost / difference_between_column_sets[c_i]
-                costs_effectiveness[c_i] = effective_cost
-            
-            selected_columns = [columns_that_contain_un_row[np.argmin(costs_effectiveness)]]
-            
+        # We now have the cost effectiveness of each column, so we should select the one with lower costs
+        selected_column = np.argmin(possible_columns_costs_effectiveness)
         
-        else:
-            # In the first iteration we should evaluate the number of rows covered by each possible column
-            number_of_rows_per_column = [0 for i, _ in enumerate(columns_that_contain_un_row)]
-            for c_i, column in enumerate(columns_that_contain_un_row):
-                for r_i, row in enumerate(rows_to_be_covered):
-                    if column in set_covering_problem_instance.scp_instance_all_rows[row]:
-                        number_of_rows_per_column[c_i] += 1
-            
-            # Cost effectiveness
-            costs_effectiveness = [0 for i, _ in enumerate(number_of_rows_per_column)]
-            for c_i, column in enumerate(columns_that_contain_un_row):
-                column_cost = set_covering_problem_instance.scp_instance_column_costs[column-1]
-                effective_cost = column_cost / number_of_rows_per_column[c_i]
-                costs_effectiveness[c_i] = effective_cost
-            
-            selected_columns = [columns_that_contain_un_row[np.argmin(costs_effectiveness)]]
-
-
-        # With the possible list of sets that contain an element we are now able to randomly choose a set
-        selected_columns = np.random.choice(selected_columns)
-
-        # Append this set to the solution
-        current_solution.append(selected_columns)
-
-        # We have to check the costs matrix
-        current_cost = 0
-        for solution_column in current_solution:
-            current_cost += set_covering_problem_instance.scp_instance_column_costs[solution_column-1]
+        # We can append this row to the solution
+        solution.append(selected_column)
         
-        # Update candidate columns
-        candidate_columns.remove(selected_columns)
+        # Compute current cost
+        current_cost = np.sum([set_covering_problem_instance.scp_instance_column_costs[c] for c in solution])
 
-        # Update rows to be covered and rows already covered
-        # Rows to be covered and rows already covered
-        for _, solution_column in enumerate(current_solution):
-            for r_i, row in enumerate(rows_to_be_covered):
-                if solution_column in set_covering_problem_instance.scp_instance_all_rows[row]:
-                    rows_to_be_covered.remove(row)
-                    rows_already_covered.append(row)
-        
-        
-        # Update number of rows to be covered
-        nr_of_rows_covered = len(rows_already_covered)
+        # Update candidate columns to be added
+        candidate_columns_to_be_added.remove(selected_column)
 
-
+        # Update rows covered
+        for row_idx, row in enumerate(problem_matrix[:, selected_column]):
+            if row == 1 and (row_idx not in rows_covered):
+                rows_covered.append(row_idx)
         
-        # Some debugging prints
-        print("Number of Rows Already Covered: {} | {}".format(nr_of_rows_covered, len(rows_already_covered)))
-        print("Current Cost: {}".format(current_cost))
-        print("Current Solution {}".format(current_solution))
-        # print("Uncovered Rows: {} | {}".format(rows_to_be_covered, len(rows_to_be_covered)))
-        # print("Candidate Columns: {}".format(candidate_columns))
-        iteration += 1
-    
+        # Update number of columns that cover a row
+        for row_idx, row in enumerate(problem_matrix[:, selected_column]):
+            if row == 1:
+                number_of_columns_that_cover_a_row[row_idx] -= 1
+        
+        # Some status prints
+        # Rows covered
+        print("Rows Covered: {}".format(rows_covered))
+        print("Number of Rows Covered: {}".format(len(rows_covered)))
+        
+        # Number of Candidate Columns
+        print("Number of Candidate Columns: {}".format(len(candidate_columns_to_be_added)))
+
+        # Current cost
+        print("Current cost: {}".format(current_cost))
+
+        # Current solution
+        print("Current solution: {}".format(solution))
+
+    # Final Statements
+    final_solution = solution
     final_cost = current_cost
-    final_solution = current_solution.copy()
+    print("Final Solution is: {}".format(final_solution))
+    print("Final Cost is: {}".format(final_cost))
+        
+
 
     # Select if we apply redundancy elimination
     if post_processing:
-        # Sort current solution (we know that higher columns have higher costs)
-        current_solution.sort()
-
-        # Initialize new soluton list
-        new_solution = list()
-
-        # Initialize new cost
-        new_cost = 0
-
-        # Get the rows to be covered again
-        rows_to_be_covered = rows_to_be_covered = [i for i in range(set_covering_problem_instance.scp_number_of_rows)]
-
-        # Let's create first a list of rows covered by each column
-        rows_covered_by_each_column = [list() for i, _ in enumerate(current_solution)]
-        for c_idx, column in enumerate(current_solution):
-            for r_idx, row in enumerate(set_covering_problem_instance.scp_instance_all_rows):
-                if column in row:
-                    rows_covered_by_each_column[c_idx].append(r_idx)
-
-        # Let's go everything again
-        # Rows covered by new solution
-        rows_covered_by_new_solution = list()
-
-        while len(rows_to_be_covered) > 0:
-            # Initialize costs effectiveness array
-            costs_effectiveness = [0 for c_i, _ in enumerate(current_solution)]
-            # Let's go trough the columns in our solution
-            for c_i, column in enumerate(current_solution):
-                # Let's be sure that we are not redundant
-                # if column not in new_solution:
-                # Check the rows covered by this solution
-                rows_covered_by_this_column = rows_covered_by_each_column[c_i]
-                # Check the difference between this column and the solution
-                different_rows_between_this_column_and_new_solution = [i for i in rows_covered_by_this_column if i not in rows_covered_by_new_solution]
-                # Only for first iteration
-                cost_of_this_column = set_covering_problem_instance.scp_instance_column_costs[column-1]
-                if len(different_rows_between_this_column_and_new_solution) > 0:
-                    costs_effective_of_this_column = cost_of_this_column / len(different_rows_between_this_column_and_new_solution)
-                    costs_effectiveness[c_i] = costs_effective_of_this_column
-                else:
-                    costs_effectiveness[c_i] = np.inf
-
-
-            # Best cost is the lower cost
-            for c_i, column in enumerate(current_solution):
-                if column in new_solution:
-                    costs_effectiveness[c_i] = np.inf
-            
-            best_cost = np.argmin(costs_effectiveness)
-            new_solution.append(current_solution[best_cost])
-
-            # Clean rows to be covered
-            for c_i, column in enumerate(new_solution):
-                for row in rows_covered_by_each_column[c_i]:
-                    if row in rows_to_be_covered:
-                        rows_to_be_covered.remove(row)
-                        rows_covered_by_new_solution.append(row)
-
-        
-        # Comput new cost
-        for column in new_solution:
-            new_cost += set_covering_problem_instance.scp_instance_column_costs[column-1]
-        
-        final_solution = new_solution
-        final_cost = new_cost
+        pass
 
 
 
@@ -315,11 +248,10 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
 
 
 
-
 # Function CH2: Constructive Heuristics Nr. 2
 def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
     """
-    CH2 - TBD
+    CH2 - LP Rounding MSCP
     """
     # Set random seed
     np.random.seed(seed=random_seed)
