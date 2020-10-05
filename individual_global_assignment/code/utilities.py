@@ -219,13 +219,13 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Some status prints
         # Rows covered
         # print("Rows Covered: {}".format(rows_covered))
-        print("Number of Rows Covered: {}".format(len(rows_covered)))
+        # print("Number of Rows Covered: {}".format(len(rows_covered)))
         
         # Number of Candidate Columns
-        print("Number of Candidate Columns: {}".format(len(candidate_columns_to_be_added)))
+        # print("Number of Candidate Columns: {}".format(len(candidate_columns_to_be_added)))
 
         # Current cost
-        print("Current cost: {}".format(current_cost))
+        # print("Current cost: {}".format(current_cost))
 
         # Current solution
         # print("Current solution: {}".format(solution))
@@ -241,6 +241,91 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     # TODO: Revise this routine 
     # Select if we apply redundancy elimination
     if post_processing:
+        # Approach 1
+        # Initialise variables again
+        # Rows covered
+        rows_covered = list()
+
+        # Rows to be covered
+        rows_to_be_covered = [i for i in range(problem_matrix.shape[0]) if i not in rows_covered]
+
+        # Processed solution
+        processed_solution = list()
+
+        # Candidate columns
+        candidate_columns = final_solution.copy()
+
+        # We check each row in our candidate columns
+        while len(rows_covered) < problem_matrix.shape[0]:
+            # Check col with higher number of rows covered
+            nr_rows_convered_by_columns = list()
+            for possible_col in candidate_columns:
+                nr_rows_convered_by_columns.append(np.sum(problem_matrix[:, possible_col]))
+            
+            # Check the col with higher number of rows
+            column_with_more_rows = candidate_columns[np.argmax(nr_rows_convered_by_columns)]
+
+            # Check which rows are covered by this column
+            rows_covered_by_col_with_more_rows = list()
+            for row_idx, row in enumerate(problem_matrix[:, column_with_more_rows]):
+                if row == 1:
+                    rows_covered_by_col_with_more_rows.append(row_idx)
+            
+            # Check columns that cover rows that may be contained in the col with more rows
+            columns_contained_in_col_with_more_rows = list()
+            for other_cold_idx, other_col in enumerate(candidate_columns):
+                if other_col != column_with_more_rows:
+                    rows_by_other_col = list()
+                    for row_idx, row in enumerate(problem_matrix[:, other_col]):
+                        if row == 1:
+                            rows_by_other_col.append(row_idx)
+                    
+                    # Check if this column is contained in the column with more rows covered
+                    for row in rows_covered_by_col_with_more_rows:
+                        if row in rows_by_other_col:
+                            rows_by_other_col.remove(row)
+                    
+                    # If the len(rows_by_other_col) == 0, then it is contained in this column
+                    if len(rows_by_other_col) == 0:
+                        columns_contained_in_col_with_more_rows.append(other_col)
+            
+            # Remove redundant columns
+            if len(columns_contained_in_col_with_more_rows) > 0:
+                # We remove them from candidate columns list
+                for col in columns_contained_in_col_with_more_rows:
+                    candidate_columns.remove(col)
+                
+            # We add the column with more rows to the solution
+            processed_solution.append(column_with_more_rows)
+
+            # We remove this columns from candidate columns
+            candidate_columns.remove(column_with_more_rows)
+
+            # We update rows covered and rows to be covered
+            # Rows to be covered
+            for row in rows_covered_by_col_with_more_rows:
+                if row in rows_to_be_covered:
+                    rows_to_be_covered.remove(row)
+            # Rows covered
+            for row in rows_covered_by_col_with_more_rows:
+                if row not in rows_covered:
+                    rows_covered.append(row)
+            
+            # Compute current cost
+            processed_cost = np.sum([set_covering_problem_instance.scp_instance_column_costs[c] for c in processed_solution])
+
+        
+        # Final Solution
+        final_solution = processed_solution
+        final_cost = processed_cost
+        print("Final Solution after processing: {}".format(final_solution))
+        print("Final Cost after processing: {}".format(final_cost))
+
+
+
+
+        """
+        # Approach 2
         # Its almost the same as the algorithm above, but now we have a closed set to search
         # Let's initialise some variables again
         # Rows covered
@@ -323,6 +408,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Get final results
         final_solution = processed_solution
         final_cost = processed_cost
+        """
 
 
 
