@@ -88,7 +88,7 @@ class SCPInstance:
 
 
 # Function CH1: Constructive Heuristics Nr. 1
-def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
+def ch1(set_covering_problem_instance, post_processing=True, random_seed=42):
     """
     CH1 - picking in each constructive step first a still un-covered element and then, second, a random set that covers this element.
     Greedy Minimum Set Cover Algorithm (Greedy MSCP)
@@ -233,12 +233,12 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
     # Final Statements
     final_solution = solution
     final_cost = current_cost
-    print("Final Solution is: {}".format(final_solution))
+    # print("Final Solution is: {}".format(final_solution))
     print("Final Cost is: {}".format(final_cost))
         
 
 
-    # TODO: Revise this routine 
+    
     # Select if we apply redundancy elimination
     if post_processing:
         # Approach 1
@@ -318,7 +318,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Final Solution
         final_processed_solution = processed_solution
         final_processed_cost = processed_cost
-        print("Final Solution after processing: {}".format(final_processed_solution))
+        # print("Final Solution after processing: {}".format(final_processed_solution))
         print("Final Cost after processing: {}".format(final_processed_cost))
 
         return final_solution, final_cost, final_processed_solution, final_processed_cost
@@ -418,7 +418,7 @@ def ch1(set_covering_problem_instance, post_processing=False, random_seed=42):
 
 
 # Function CH2: Constructive Heuristics Nr. 2
-def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
+def ch2(set_covering_problem_instance, post_processing=True, random_seed=42):
     """
     CH2 - Evaluate all the sets, pick the one with smaller cost effectiveness and add to the solution
     """
@@ -547,7 +547,7 @@ def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
     # Final Statements
     final_solution = solution
     final_cost = current_cost
-    print("Final Solution is: {}".format(final_solution))
+    # print("Final Solution is: {}".format(final_solution))
     print("Final Cost is: {}".format(final_cost))
 
 
@@ -556,7 +556,7 @@ def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
 
 
 
-    # TODO: Revise this routine 
+    
     # Select if we apply redundancy elimination
     if post_processing:
         # Approach 1
@@ -636,7 +636,7 @@ def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
         # Final Solution
         final_processed_solution = processed_solution
         final_processed_cost = processed_cost
-        print("Final Solution after processing: {}".format(final_processed_solution))
+        # print("Final Solution after processing: {}".format(final_processed_solution))
         print("Final Cost after processing: {}".format(final_processed_cost))
 
         return final_solution, final_cost, final_processed_solution, final_processed_cost
@@ -735,7 +735,7 @@ def ch2(set_covering_problem_instance, post_processing=False, random_seed=42):
 
 
 # Function CH3: Constructive Heuristics Nr. 3
-def ch3(set_covering_problem_instance, post_processing=False, random_seed=42):
+def ch3(set_covering_problem_instance, post_processing=True, random_seed=42):
     """
     CH3 - TBD
     """
