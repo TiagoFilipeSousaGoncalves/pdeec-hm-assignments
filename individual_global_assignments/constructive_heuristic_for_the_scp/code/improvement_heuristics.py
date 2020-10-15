@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # IH1: First Improvement
-def ih1(ch_results_array, scp_instances_dir, random_seed=42):
+def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH1: Choose the first neighbour.
     """
@@ -75,14 +75,52 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42):
         column_freq_problem[col_idx] = np.sum(problem_matrix[:, col_idx])
 
     
+    # Tabu Search for Columnns: Columns in the solution begin with value -1, the rest with 0; until the value of tabu_thr the column is usable
+    tabu_columns = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(tabu_columns):
+        if col_idx in initial_solution:
+            tabu_columns[col_idx] = -1
     
 
+    # Initialise variables
+    # Current solution
+    current_solution = initial_solution.copy()
+    
+    # Current cost
+    current_cost = 0
+    for col in current_solution:
+        current_cost += scp_instance.scp_instance_column_costs[col]
+
+    # If current cost is different from the processed cost, we will take this last into account
+    if current_cost != initial_cost:
+        initial_cost = current_cost
+    
+
+    # Initialise number of iterations
+    nr_iteration = 1
+
+    # Initialise number of iterations in patience
+    nr_patience = 1
+    
+
+    # Begin algorithm
+    while (nr_iteration <= max_iterations) or (nr_patience <= patience):
+        # Generate a neighbour-solution
+        # Create a condition that decides that we have found a proper neighbour
+        valid_neighbours = False
+        while valid_neighbours != True:
+            # Choose a column of our solution that will be swaped, we are assuming Uniform PD
+            swap_column = np.random.choice(a=current_solution)
+
+            # Neighbours
 
 
-    pass
+
+
+    return final_solution, final_cost
 
 # IH2: Best Improvement
-def ih2(ch_results_array, scp_instances_dir, random_seed=42):
+def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000):
     """
     IH2: Choose the best neighbour.
     """
@@ -92,7 +130,7 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42):
     pass
 
 # IH3: Hybrid Approach
-def ih3(ch_results_array, scp_instances_dir, random_seed=42):
+def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000):
     """
     IH3: A (tentative) hybrid approach.
     """
