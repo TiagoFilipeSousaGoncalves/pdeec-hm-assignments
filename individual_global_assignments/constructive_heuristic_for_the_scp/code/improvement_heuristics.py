@@ -104,7 +104,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     
 
     # Begin algorithm
-    while (nr_iteration <= max_iterations) or (nr_patience <= patience):
+    while (nr_iteration <= max_iterations) and (nr_patience <= patience):
+        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -147,6 +148,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 # This way, the neighbours must contain at least the uncovered rows after swap
                 # We check the available columns first
                 for col, col_avail in enumerate(columns_availability):
+                    # print("Column: ", col)
                     # It must respect the constraints related with the availability and tabu search
                     if (col != swap_column) and (col_avail == 1) and (tabu_columns[col] >= 0) and (tabu_columns[col] <= 10):
                         # Check the rows that this col covers
@@ -166,8 +168,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                             neighbours = neighbours.copy()
                 
 
-                # Now we should have neighbours
-                if len(neighbours) > 0:
+                # Now we should have neighbours (or not)
+                if len(neighbours) >= 0:
                     valid_neighbours = True
         
 
@@ -195,6 +197,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 
                 # Iterations
                 nr_iteration += 1
+                nr_patience = 0
             
             else:
                 nr_iteration += 1
@@ -209,7 +212,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
             # Let's perform the swap
             new_solution = current_solution.copy()
             new_solution.remove(swap_column)
-            new_solution.append(chosen_neighbour)
+            if chosen_neighbour not in new_solution:
+                new_solution.append(chosen_neighbour)
 
             # Compute the new cost
             new_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in new_solution])
@@ -233,6 +237,10 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 tabu_columns[chosen_neighbour] += 1
                 # The swap column
                 tabu_columns[swap_column] += 1
+                # Check if we have to reset Tabu Search
+                for col, tabu_value in enumerate(tabu_columns):
+                    if tabu_value >= 20:
+                        tabu_columns[col] = 0
 
                 
                 # Rows Frequency Solution
@@ -243,6 +251,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 
                 # Iterations
                 nr_iteration += 1
+                nr_patience = 0
             
             else:
                 nr_iteration += 1
