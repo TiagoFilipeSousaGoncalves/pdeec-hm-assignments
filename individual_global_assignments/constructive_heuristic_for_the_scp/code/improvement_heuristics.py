@@ -113,11 +113,147 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
             swap_column = np.random.choice(a=current_solution)
 
             # Neighbours
+            # First we verify the rows that this column covers
+            rows_covered_by_swap_column = list()
+            for row, row_value in enumerate(problem_matrix[:, swap_column]):
+                if row_value == 1:
+                    rows_covered_by_swap_column.append(row)
+            
+            # Then we subtract 1 from the row freq column to check if there are columns that suddenly become unavailable
+            rows_freq_solution_after_swap = rows_freq_solution.copy()
+            for row in rows_covered_by_swap_column:
+                rows_freq_solution_after_swap[row] -= 1
+            
+            
+            # Now we have to verify if there is some row that is unavailable
+            uncovered_rows_after_swap = list()
+            for row, row_freq in enumerate(rows_freq_solution_after_swap):
+                if row_freq <= 0:
+                    uncovered_rows_after_swap.append(row)
 
 
+            # We have two options:
+            neighbours = list()
+            # Option 1: All rows are covered
+            if len(uncovered_rows_after_swap) == 0:
+                # If all the rows are covered this column is redundant!
+                new_solution = current_solution.copy()
+                new_solution.remove(swap_column)
+                # Therefore, we found a valid neighbour solution
+                valid_neighbours = True
 
+            # Option 2: We have uncovered rows
+            else:
+                # This way, the neighbours must contain at least the uncovered rows after swap
+                # We check the available columns first
+                for col, col_avail in enumerate(columns_availability):
+                    # It must respect the constraints related with the availability and tabu search
+                    if (col != swap_column) and (col_avail == 1) and (tabu_columns[col] >= 0) and (tabu_columns[col] <= 10):
+                        # Check the rows that this col covers
+                        temp_rows_col_covers = list()
+                        for row, row_value in enumerate(problem_matrix[:, col]):
+                            if row_value == 1:
+                                temp_rows_col_covers.append(row)
+                        
+                        # Now let's check this column covers all the uncovered rows
+                        try:
+                            for row in uncovered_rows_after_swap:
+                                temp_rows_col_covers.remove(row)
+                            
+                            neighbours.append(row)
+                        
+                        except:
+                            neighbours = neighbours.copy()
+                
 
-    return final_solution, final_cost
+                # Now we should have neighbours
+                if len(neighbours) > 0:
+                    valid_neighbours = True
+        
+
+        # If we just removed a column
+        if len(neighbours) == 0:
+            # Let's compute the cost of the new solution
+            new_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in new_solution])
+            # It is better, our current cost is the new cost
+            if new_cost < current_cost:
+                current_cost = new_cost
+                
+                # And our current solution is the new_solution
+                current_solution = new_solution
+
+                # Updates
+                # Columns Availability
+                for col in current_solution:
+                    columns_availability[col] = 0
+                
+                # Rows Frequency Solution
+                rows_freq_solution = [0 for i in range(problem_matrix.shape[0])]
+                for col in current_solution:
+                    for row_idx, _ in enumerate(rows_freq_solution):
+                        rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
+                
+                # Iterations
+                nr_iteration += 1
+            
+            else:
+                nr_iteration += 1
+                nr_patience += 1
+        
+
+        # Otherwise, we have neighbours
+        else:
+            # Here, we choose the FIRST neighbour
+            chosen_neighbour = neighbours[0]
+            
+            # Let's perform the swap
+            new_solution = current_solution.copy()
+            new_solution.remove(swap_column)
+            new_solution.append(chosen_neighbour)
+
+            # Compute the new cost
+            new_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in new_solution])
+            # It is better, our current cost is the new cost
+            if new_cost < current_cost:
+                current_cost = new_cost
+                
+                # And our current solution is the new_solution
+                current_solution = new_solution
+
+                # Updates
+                # Columns Availability
+                for col in current_solution:
+                    columns_availability[col] = 0
+                
+                # Do not forget the swap column!
+                columns_availability[swap_column] = 1
+
+                # Tabu Search
+                # The neighbour
+                tabu_columns[chosen_neighbour] += 1
+                # The swap column
+                tabu_columns[swap_column] += 1
+
+                
+                # Rows Frequency Solution
+                rows_freq_solution = [0 for i in range(problem_matrix.shape[0])]
+                for col in current_solution:
+                    for row_idx, _ in enumerate(rows_freq_solution):
+                        rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
+                
+                # Iterations
+                nr_iteration += 1
+            
+            else:
+                nr_iteration += 1
+                nr_patience += 1
+        
+
+    # Final solutions
+    final_cost = current_cost
+    final_solution = current_solution.copy()
+
+    return initial_solution, initial_cost, final_solution, final_cost
 
 # IH2: Best Improvement
 def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000):
