@@ -141,7 +141,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 new_solution = current_solution.copy()
                 new_solution.remove(swap_column)
                 # Therefore, we found a valid neighbour solution
-                print("removed column")
+                # print("removed column")
                 valid_neighbours = True
 
             # Option 2: We have uncovered rows
@@ -171,8 +171,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 
 
                 # Now we should have neighbours (or not)
-                if len(neighbours) >= 0:
-                    print("more than one neighbour")
+                if len(neighbours) > 0:
+                    # print("more than one neighbour", len(neighbours))
                     valid_neighbours = True
         
 
@@ -273,7 +273,7 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     IH2: Choose the best neighbour.
     """
 
-        # Set Numpy random seed
+    # Set Numpy random seed
     np.random.seed(seed=random_seed)
     
     # Read the array information
@@ -364,7 +364,7 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -420,15 +420,16 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                         try:
                             for row in uncovered_rows_after_swap:
                                 temp_rows_col_covers.remove(row)
-                            
-                            neighbours.append(row)
+
+                            if len(temp_rows_col_covers) == 0:
+                                neighbours.append(col)
                         
                         except:
                             neighbours = neighbours.copy()
                 
 
                 # Now we should have neighbours (or not)
-                if len(neighbours) >= 0:
+                if len(neighbours) > 0:
                     valid_neighbours = True
         
 
@@ -527,11 +528,267 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     return initial_solution, initial_cost, final_solution, final_cost
 
 # IH3: Hybrid Approach
-def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000):
+def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH3: A (tentative) hybrid approach.
     """
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
-    pass
+    
+    # Read the array information
+    # SCP Instance Filename is at index 0
+    scp_instance_filename = ch_results_array[0]
+    
+    # Processed Solution is at index 3
+    initial_solution = ch_results_array[3]
+
+    # Processed Cost is at index 4
+    initial_cost = ch_results_array[4]
+
+
+    # Get the SCP Instance
+    scp_instance_path = os.path.join(scp_instances_dir, scp_instance_filename)
+
+    # Load the SCP Instance Object
+    scp_instance = SCPInstance(scp_instance_filename=scp_instance_path)
+
+    # Build Row X Column Matrix
+    problem_matrix = np.zeros((scp_instance.scp_number_of_rows, scp_instance.scp_number_of_columns), dtype=int)
+    # Fill Problem Matrix
+    for row_idx, row in enumerate(scp_instance.scp_instance_all_rows):
+        for column in row:
+            problem_matrix[row_idx, column-1] = 1
+    
+    
+    # Variables in Memory: We create several memory variables that will be useful through the algorithm
+    # Columns Availability: Variable To Use in Flips/Swaps, 1 if available, 0 if not available
+    columns_availability = [1 for i in range(problem_matrix.shape[1])]
+    for col in initial_solution:
+        columns_availability[col] = 0
+
+    
+    # Rows Availability: Variable to check for rows that are covered/not covered 1 if covered, 0 if not covered
+    rows_availability = [1 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_availability):
+        if np.sum(problem_matrix[row_idx, :]) == 0:
+            rows_availability[row_idx] = 0
+    
+    
+    # Rows Frequency Problem: Number of Times Each Row Appears in the Problem Matrix
+    rows_freq_problem = [0 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_freq_problem):
+        rows_freq_problem[row_idx] = np.sum(problem_matrix[row_idx, :])
+
+
+    # Rows Frequency Solution: Number of Times Each Row Appears in the Solution
+    rows_freq_solution = [0 for i in range(problem_matrix.shape[0])]
+    for col in initial_solution:
+        for row_idx, _ in enumerate(rows_freq_solution):
+            rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
+    
+
+    # Column Frequency: Number of Times Each Column Appears in the Problem Matrix
+    column_freq_problem = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(column_freq_problem):
+        column_freq_problem[col_idx] = np.sum(problem_matrix[:, col_idx])
+
+    
+    # Tabu Search for Columnns: Columns in the solution begin with value -1, the rest with 0; until the value of tabu_thr the column is usable
+    tabu_columns = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(tabu_columns):
+        if col_idx in initial_solution:
+            tabu_columns[col_idx] = -1
+    
+
+    # Initialise variables
+    # Current solution
+    current_solution = initial_solution.copy()
+    
+    # Current cost
+    current_cost = 0
+    for col in current_solution:
+        current_cost += scp_instance.scp_instance_column_costs[col]
+
+    # If current cost is different from the processed cost, we will take this last into account
+    if current_cost != initial_cost:
+        initial_cost = current_cost
+    
+
+    # Initialise number of iterations
+    nr_iteration = 1
+
+    # Initialise number of iterations in patience
+    nr_patience = 1
+    
+
+    # Begin algorithm
+    while (nr_iteration <= max_iterations) and (nr_patience <= patience):
+        pass
+
+    return initial_solution, initial_cost, final_solution, final_cost
+
+
+# Paper Approach by Fatema Akhter
+def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_repetition_factor=5, hill_climbing_repetition_factor=5):
+    # Set Numpy random seed
+    np.random.seed(seed=random_seed)
+    
+    # Read the array information
+    # SCP Instance Filename is at index 0
+    scp_instance_filename = ch_results_array[0]
+    
+    # Processed Solution is at index 3
+    initial_solution = ch_results_array[3]
+
+    # Processed Cost is at index 4
+    initial_cost = ch_results_array[4]
+
+
+    # Get the SCP Instance
+    scp_instance_path = os.path.join(scp_instances_dir, scp_instance_filename)
+
+    # Load the SCP Instance Object
+    scp_instance = SCPInstance(scp_instance_filename=scp_instance_path)
+
+    # Build Row X Column Matrix
+    problem_matrix = np.zeros((scp_instance.scp_number_of_rows, scp_instance.scp_number_of_columns), dtype=int)
+    # Fill Problem Matrix
+    for row_idx, row in enumerate(scp_instance.scp_instance_all_rows):
+        for column in row:
+            problem_matrix[row_idx, column-1] = 1
+    
+    
+    # Variables in Memory: We create several memory variables that will be useful through the algorithm
+    # Columns Availability: Variable To Use in Flips/Swaps, 1 if available, 0 if not available
+    columns_availability = [1 for i in range(problem_matrix.shape[1])]
+    for col in initial_solution:
+        columns_availability[col] = 0
+
+    
+    # Rows Availability: Variable to check for rows that are covered/not covered 1 if covered, 0 if not covered
+    rows_availability = [1 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_availability):
+        if np.sum(problem_matrix[row_idx, :]) == 0:
+            rows_availability[row_idx] = 0
+    
+    
+    # Rows Frequency Problem: Number of Times Each Row Appears in the Problem Matrix
+    rows_freq_problem = [0 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_freq_problem):
+        rows_freq_problem[row_idx] = np.sum(problem_matrix[row_idx, :])
+
+
+    # Rows Frequency Solution: Number of Times Each Row Appears in the Solution
+    rows_freq_solution = [0 for i in range(problem_matrix.shape[0])]
+    for col in initial_solution:
+        for row_idx, _ in enumerate(rows_freq_solution):
+            rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
+    
+
+    # Column Frequency: Number of Times Each Column Appears in the Problem Matrix
+    column_freq_problem = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(column_freq_problem):
+        column_freq_problem[col_idx] = np.sum(problem_matrix[:, col_idx])
+
+    
+    # Tabu Search for Columnns: Columns in the solution begin with value -1, the rest with 0; until the value of tabu_thr the column is usable
+    tabu_columns = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(tabu_columns):
+        if col_idx in initial_solution:
+            tabu_columns[col_idx] = -1
+    
+
+    # Initialise variables
+    # Current solution
+    current_solution = initial_solution.copy()
+    
+    # Current cost
+    current_cost = 0
+    for col in current_solution:
+        current_cost += scp_instance.scp_instance_column_costs[col]
+
+    # If current cost is different from the processed cost, we will take this last into account
+    if current_cost != initial_cost:
+        initial_cost = current_cost
+    
+
+    # Compute the R value from the paper
+    R = problem_matrix.shape[0] * problem_matrix.shape[1]
+
+    # Begin algorithm
+    # First Part: Set Redundancy Elimination
+    for _ in range((R * set_minimization_repetition_factor)):
+        # Randomly select a set X* from the selected sets.
+        candidate_redundant_set = np.random.choice(a=current_solution)
+        
+        # Mark this set X as Unselected Set.
+        new_solution = current_solution.copy()
+        new_solution.remove(candidate_redundant_set)
+
+        # Check whether the universality constraint holds
+        temp_row_availability = [0 for i in range(problem_matrix.shape[0])]
+        for col in new_solution:
+            for row, row_value in enumerate(problem_matrix[:, col]):
+                if row_value == 1:
+                    if temp_row_availability[row] == 0:
+                        temp_row_availability[row] = 1
+                    else:
+                        temp_row_availability[row] = 1
+        
+        # The total_availability must be equal to the number of rows to cover, then we have a new solution
+        if int(np.sum(temp_row_availability)) == (problem_matrix.shape[0]):
+            new_cost = [scp_instance.scp_instance_column_costs[c] for c in new_solution]
+            # Stay with this state and find the cost, Cnew.
+            new_cost = np.sum(new_cost)
+            # Replace the best found cost C, with the current cost, Cnew.
+            current_cost = new_cost
+            # Remove set X from the selected sets, X.
+            current_solution = new_solution.copy()
+            
+            # Update column availability
+            columns_availability[candidate_redundant_set] = 1
+    
+
+    # Second Part: Hill Climbing Algorithm
+    for _ in range((R * hill_climbing_repetition_factor)):
+        # Randomly select a set Y from the unselected sets, S-X
+        available_sets = [c for c, c_avail in enumerate(columns_availability) if c_avail == 1]
+        
+        # Mark this set as Selected.
+        candidate_added_set = np.random.choice(a=available_sets)
+        new_solution = current_solution.copy()
+        
+        # Check whether the universality constraint holds
+        new_solution.append(candidate_added_set)
+
+        # Check whether the universality constraint holds
+        temp_row_availability = [0 for i in range(problem_matrix.shape[0])]
+        for col in new_solution:
+            for row, row_value in enumerate(problem_matrix[:, col]):
+                if row_value == 1:
+                    if temp_row_availability[row] == 0:
+                        temp_row_availability[row] = 1
+                    else:
+                        temp_row_availability[row] = 1
+        
+        # The total_availability must be equal to the number of rows to cover, then we have a new solution
+        if int(np.sum(temp_row_availability)) == (problem_matrix.shape[0]):
+            # Find cost Cnew of c((X - X) U ( Y )
+            new_cost = [scp_instance.scp_instance_column_costs[c] for c in new_solution]
+            if new_cost <= current_cost:
+                
+                # Replace the best found cost C, with the current cost, Cnew.
+                current_cost = new_cost
+                current_solution = new_solution.copy()
+
+                # Update column availability
+                columns_availability[candidate_added_set] = 0
+
+
+    # End algorithm
+    final_solution = current_solution.copy()
+    final_cost = current_cost.copy()
+
+
+    return initial_solution, initial_cost, final_solution, final_cost
