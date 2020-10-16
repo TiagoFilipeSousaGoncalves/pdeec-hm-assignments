@@ -206,8 +206,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
         # Otherwise, we have neighbours
         else:
-            # Here, we choose the FIRST neighbour
-            chosen_neighbour = neighbours[0]
+            # Here, we choose the FIRST neighbour we find
+            chosen_neighbour = np.random.choice(a=neighbours)
             
             # Let's perform the swap
             new_solution = current_solution.copy()
