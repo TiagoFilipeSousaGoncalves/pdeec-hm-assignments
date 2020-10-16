@@ -105,7 +105,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -141,6 +141,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                 new_solution = current_solution.copy()
                 new_solution.remove(swap_column)
                 # Therefore, we found a valid neighbour solution
+                print("removed column")
                 valid_neighbours = True
 
             # Option 2: We have uncovered rows
@@ -162,7 +163,8 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                             for row in uncovered_rows_after_swap:
                                 temp_rows_col_covers.remove(row)
                             
-                            neighbours.append(row)
+                            if len(temp_rows_col_covers) == 0:
+                                neighbours.append(col)
                         
                         except:
                             neighbours = neighbours.copy()
@@ -170,6 +172,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
                 # Now we should have neighbours (or not)
                 if len(neighbours) >= 0:
+                    print("more than one neighbour")
                     valid_neighbours = True
         
 
@@ -265,7 +268,7 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     return initial_solution, initial_cost, final_solution, final_cost
 
 # IH2: Best Improvement
-def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000):
+def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH2: Choose the best neighbour.
     """
