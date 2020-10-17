@@ -53,7 +53,9 @@ if test_result == 0:
                     )
                 
                 # Go through all the ch results instances
+                ch_array = ch_array[1:, :]
                 for scp_idx, scp_instance_results in enumerate(ch_array):
+                    print("Instance {} of {}".format(scp_idx+1, ch_array.shape[0]))
                     # Start time
                     start = timer()
 
