@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # IH1: First Improvement
-def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
+def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH1: Choose the first neighbour (randomly).
     """
@@ -20,12 +20,20 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     # Read the array information
     # SCP Instance Filename is at index 0
     scp_instance_filename = ch_results_array[0]
-    
-    # Processed Solution is at index 3
-    initial_solution = ch_results_array[3]
 
-    # Processed Cost is at index 4
-    initial_cost = ch_results_array[4]
+    if use_processed_solution:
+        # Processed Solution is at index 3
+        initial_solution = ch_results_array[3]
+
+        # Processed Cost is at index 4
+        initial_cost = ch_results_array[4]
+    
+    else:
+        # Initial Solution is at index 1
+        initial_solution = ch_results_array[1]
+
+        # Initial Cost is at index 2
+        initial_cost = ch_results_array[2]
 
 
     # Get the SCP Instance
@@ -101,6 +109,10 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
     # Initialise number of iterations in patience
     nr_patience = 1
+
+    # History: Save the Iteration and the Cost Value in that iteration to obtain good plots
+    history = list()
+    history.append(initial_solution)
     
 
     # Begin algorithm
@@ -198,11 +210,18 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                     for row_idx, _ in enumerate(rows_freq_solution):
                         rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
                 
+
+                # History
+                history.append(new_cost)
+
                 # Iterations
                 nr_iteration += 1
                 nr_patience = 0
             
             else:
+                # History
+                history.append(new_cost)
+
                 nr_iteration += 1
                 nr_patience += 1
         
@@ -252,11 +271,18 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                     for row_idx, _ in enumerate(rows_freq_solution):
                         rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
                 
+
+                # History
+                history.append(new_cost)
+
                 # Iterations
                 nr_iteration += 1
                 nr_patience = 0
             
             else:
+                # History
+                history.append(new_cost)
+
                 nr_iteration += 1
                 nr_patience += 1
         
@@ -265,10 +291,13 @@ def ih1(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     final_cost = current_cost
     final_solution = current_solution.copy()
 
-    return initial_solution, initial_cost, final_solution, final_cost
+    # History
+    history.append(final_cost)
+
+    return initial_solution, initial_cost, final_solution, final_cost, history
 
 # IH2: Best Improvement
-def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
+def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH2: Choose the best neighbour.
     """
@@ -280,11 +309,19 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     # SCP Instance Filename is at index 0
     scp_instance_filename = ch_results_array[0]
     
-    # Processed Solution is at index 3
-    initial_solution = ch_results_array[3]
+    if use_processed_solution:
+        # Processed Solution is at index 3
+        initial_solution = ch_results_array[3]
 
-    # Processed Cost is at index 4
-    initial_cost = ch_results_array[4]
+        # Processed Cost is at index 4
+        initial_cost = ch_results_array[4]
+    
+    else:
+        # Initial Solution is at index 1
+        initial_solution = ch_results_array[1]
+
+        # Initial Cost is at index 2
+        initial_cost = ch_results_array[2]
 
 
     # Get the SCP Instance
@@ -360,6 +397,10 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
     # Initialise number of iterations in patience
     nr_patience = 1
+
+    # History
+    history = list()
+    history.append(initial_cost)
     
 
     # Begin algorithm
@@ -455,11 +496,18 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                     for row_idx, _ in enumerate(rows_freq_solution):
                         rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
                 
+
+                # History
+                history.append(new_cost)
+
                 # Iterations
                 nr_iteration += 1
                 nr_patience = 0
             
             else:
+                # History
+                history.append(new_cost)
+
                 nr_iteration += 1
                 nr_patience += 1
         
@@ -512,11 +560,19 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
                     for row_idx, _ in enumerate(rows_freq_solution):
                         rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
                 
+
+
+                # History
+                history.append(new_cost)
+
                 # Iterations
                 nr_iteration += 1
                 nr_patience = 0
             
             else:
+                # History
+                history.append(new_cost)
+
                 nr_iteration += 1
                 nr_patience += 1
         
@@ -525,10 +581,14 @@ def ih2(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     final_cost = current_cost
     final_solution = current_solution.copy()
 
-    return initial_solution, initial_cost, final_solution, final_cost
+    # History
+    history.append(final_cost)
+
+
+    return initial_solution, initial_cost, final_solution, final_cost, history
 
 # IH3: Hybrid Approach
-def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
+def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=1000000, patience=1000, tabu_thr=10):
     """
     IH3: A (tentative) hybrid approach.
     """
@@ -540,11 +600,19 @@ def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
     # SCP Instance Filename is at index 0
     scp_instance_filename = ch_results_array[0]
     
-    # Processed Solution is at index 3
-    initial_solution = ch_results_array[3]
+    if use_processed_solution:
+        # Processed Solution is at index 3
+        initial_solution = ch_results_array[3]
 
-    # Processed Cost is at index 4
-    initial_cost = ch_results_array[4]
+        # Processed Cost is at index 4
+        initial_cost = ch_results_array[4]
+    
+    else:
+        # Initial Solution is at index 1
+        initial_solution = ch_results_array[1]
+
+        # Initial Cost is at index 2
+        initial_cost = ch_results_array[2]
 
 
     # Get the SCP Instance
@@ -630,7 +698,7 @@ def ih3(ch_results_array, scp_instances_dir, random_seed=42, max_iterations=1000
 
 
 # Paper Approach by Fatema Akhter
-def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_repetition_factor=5, hill_climbing_repetition_factor=5):
+def ih4(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, set_minimization_repetition_factor=5, hill_climbing_repetition_factor=5):
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
     
@@ -638,11 +706,19 @@ def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_re
     # SCP Instance Filename is at index 0
     scp_instance_filename = ch_results_array[0]
     
-    # Processed Solution is at index 3
-    initial_solution = ch_results_array[3]
+    if use_processed_solution:
+        # Processed Solution is at index 3
+        initial_solution = ch_results_array[3]
 
-    # Processed Cost is at index 4
-    initial_cost = ch_results_array[4]
+        # Processed Cost is at index 4
+        initial_cost = ch_results_array[4]
+    
+    else:
+        # Initial Solution is at index 1
+        initial_solution = ch_results_array[1]
+
+        # Initial Cost is at index 2
+        initial_cost = ch_results_array[2]
 
 
     # Get the SCP Instance
@@ -716,6 +792,10 @@ def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_re
     # Compute the R value from the paper
     R = problem_matrix.shape[0] * problem_matrix.shape[1]
 
+    # History
+    history = list()
+    history.append(initial_cost)
+
     # Begin algorithm
     # First Part: Set Redundancy Elimination
     for _ in range((R * set_minimization_repetition_factor)):
@@ -748,6 +828,9 @@ def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_re
             
             # Update column availability
             columns_availability[candidate_redundant_set] = 1
+            
+            # History
+            history.append(new_cost)
     
 
     # Second Part: Hill Climbing Algorithm
@@ -775,7 +858,7 @@ def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_re
         # The total_availability must be equal to the number of rows to cover, then we have a new solution
         if int(np.sum(temp_row_availability)) == (problem_matrix.shape[0]):
             # Find cost Cnew of c((X - X) U ( Y )
-            new_cost = [scp_instance.scp_instance_column_costs[c] for c in new_solution]
+            new_cost = np.sum([scp_instance.scp_instance_column_costs[c] for c in new_solution])
             if new_cost <= current_cost:
                 
                 # Replace the best found cost C, with the current cost, Cnew.
@@ -785,10 +868,16 @@ def ih4(ch_results_array, scp_instances_dir, random_seed=42, set_minimization_re
                 # Update column availability
                 columns_availability[candidate_added_set] = 0
 
+                # History
+                history.append(new_cost)
+
 
     # End algorithm
     final_solution = current_solution.copy()
     final_cost = current_cost.copy()
 
+    # History
+    history.append(final_cost)
 
-    return initial_solution, initial_cost, final_solution, final_cost
+
+    return initial_solution, initial_cost, final_solution, final_cost, history

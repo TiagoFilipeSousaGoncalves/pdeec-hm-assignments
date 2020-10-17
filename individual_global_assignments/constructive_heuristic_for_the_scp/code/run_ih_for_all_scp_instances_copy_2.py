@@ -27,7 +27,8 @@ test_result = test_SCPInstances()
 if test_result == 0:
     # Run each IH for non-processed and processed solutions
     # for ih_idx, ih in enumerate([ih1, ih2, ih3, ih4]):
-    for ih_idx, ih in enumerate([ih1]):
+    for ih_idx, ih in enumerate([ih4]):
+        ih_idx = ih_idx + 3
         print("Current: IH{}".format(ih_idx+1))
         # And for non-processed and processed solutions:
         for boolean in [False, True]:
