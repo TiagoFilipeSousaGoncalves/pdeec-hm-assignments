@@ -64,10 +64,10 @@ if test_result == 0:
 
                     # Obtain the results
                     try:
-                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=10000, patience=100, tabu_thr=10)
+                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=6000, patience=100, tabu_thr=10)
                     
                     except:
-                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=0.2, hill_climbing_repetition_factor=0.1)
+                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=0.05, hill_climbing_repetition_factor=0.025)
                     
 
                     # End time
