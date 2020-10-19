@@ -908,7 +908,7 @@ def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random
     # History
     history.append(final_cost)
 
-    return initial_solution, initial_cost, final_solution, final_cost
+    return initial_solution, initial_cost, final_solution, final_cost, history
 
 
 # Paper Approach by Fatema Akhter
