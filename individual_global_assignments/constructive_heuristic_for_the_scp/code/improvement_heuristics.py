@@ -693,6 +693,10 @@ def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Initialise number of iterations in patience
     nr_patience = 1
+
+    # History
+    history = list()
+    history.append(initial_cost)
     
 
     # Begin algorithm
@@ -722,10 +726,12 @@ def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random
                     col_candidate = current_solution[len(current_solution)-aux_idx]
                     if col_candidate not in swap_column_history:
                         swap_column = col_candidate
+                        swap_column_history.append(swap_column)
                     else:
                         aux_idx += 1
                 else:
                     swap_column_history = list()
+                    aux_idx = 1
 
 
             # Neighbours
