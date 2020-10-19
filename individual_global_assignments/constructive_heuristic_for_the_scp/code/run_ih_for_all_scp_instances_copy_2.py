@@ -31,8 +31,8 @@ if test_result == 0:
         ih_idx = ih_idx + 3
         print("Current: IH{}".format(ih_idx+1))
         # And for non-processed and processed solutions:
-        for boolean in [False, True]:
-            for input_results_array in ['ch1', 'ch2', 'ch5', 'ch3', 'ch4']:
+        for input_results_array in ['ch1', 'ch2', 'ch5', 'ch3', 'ch4']:
+            for boolean in [False, True]:
                 print("Current: {} | Post Processed: {}".format(input_results_array, boolean))
                 # We create a results array to append all the results 
                 results_array = np.zeros(shape=(len(scp_instances_list)+1, 7), dtype='object')
@@ -63,11 +63,11 @@ if test_result == 0:
                     results_array[scp_idx+1, 0] = scp_instance_results[0]
 
                     # Obtain the results
-                    try:
-                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=6000, patience=100, tabu_thr=10)
+                    # try:
+                        # initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=6000, patience=100, tabu_thr=10)
                     
-                    except:
-                        initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=5000, hill_climbing_repetition_factor=1000)
+                    # except:
+                    initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=5000, hill_climbing_repetition_factor=1000)
                     
 
                     # End time
@@ -85,14 +85,14 @@ if test_result == 0:
                     results_array[scp_idx+1, 5] = history
                     results_array[scp_idx+1, 6] = elapsed_time
 
-            # We save this results into a Numpy array in results directory
-            # Create results dir if not present
-            if os.path.isdir(results_dir) == False:
-                os.mkdir(results_dir)
-        
-            # Create results array filename
-            results_array_filename = 'ih_{}_appon_{}_processed_solution_{}.npy'.format(ih_idx+1, input_results_array, boolean)
-            np.save(file=os.path.join(results_dir, results_array_filename), arr=results_array)
+                # We save this results into a Numpy array in results directory
+                # Create results dir if not present
+                if os.path.isdir(results_dir) == False:
+                    os.mkdir(results_dir)
+            
+                # Create results array filename
+                results_array_filename = 'ih_{}_appon_{}_processed_solution_{}.npy'.format(ih_idx+1, input_results_array, boolean)
+                np.save(file=os.path.join(results_dir, results_array_filename), arr=results_array)
 
 # Finish statement
 print("Improvement Heuristics for SCP, finished.")

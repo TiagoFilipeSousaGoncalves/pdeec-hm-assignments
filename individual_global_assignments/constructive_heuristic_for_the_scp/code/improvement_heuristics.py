@@ -798,7 +798,7 @@ def ih4(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Begin algorithm
     # First Part: Set Redundancy Elimination
-    for _ in range(int((R * set_minimization_repetition_factor))):
+    for _ in range(int(set_minimization_repetition_factor)):
         # Randomly select a set X* from the selected sets.
         candidate_redundant_set = np.random.choice(a=current_solution)
         
@@ -834,7 +834,7 @@ def ih4(ch_results_array, scp_instances_dir, use_processed_solution=True, random
     
 
     # Second Part: Hill Climbing Algorithm
-    for _ in range(int((R * hill_climbing_repetition_factor))):
+    for _ in range(int(hill_climbing_repetition_factor)):
         # Randomly select a set Y from the unselected sets, S-X
         available_sets = [c for c, c_avail in enumerate(columns_availability) if c_avail == 1]
         
