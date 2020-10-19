@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # IH1: First Improvement
-def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=6000, patience=50, tabu_thr=10):
+def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=5000, patience=100, tabu_thr=10):
     """
     IH1: Choose the first neighbour (randomly).
     """
@@ -117,7 +117,7 @@ def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -299,7 +299,7 @@ def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random
     return initial_solution, initial_cost, final_solution, final_cost, history
 
 # IH2: Best Improvement
-def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=6000, patience=50, tabu_thr=10):
+def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=5000, patience=100, tabu_thr=10):
     """
     IH2: Choose the best neighbour.
     """
@@ -407,7 +407,7 @@ def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -593,7 +593,7 @@ def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random
     return initial_solution, initial_cost, final_solution, final_cost, history
 
 # IH3: Hybrid Approach
-def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=6000, patience=50, tabu_thr=10):
+def ih3(ch_results_array, scp_instances_dir, use_processed_solution=True, random_seed=42, max_iterations=5000, patience=100, tabu_thr=10):
     """
     IH3: A (tentative) hybrid approach.
     """
