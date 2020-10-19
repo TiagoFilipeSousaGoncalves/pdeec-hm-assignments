@@ -27,8 +27,8 @@ test_result = test_SCPInstances()
 if test_result == 0:
     # Run each IH for non-processed and processed solutions
     # for ih_idx, ih in enumerate([ih1, ih2, ih3, ih4]):
-    for ih_idx, ih in enumerate([ih4]):
-        ih_idx = ih_idx + 3
+    for ih_idx, ih in enumerate([ih3]):
+        ih_idx = ih_idx + 2
         print("Current: IH{}".format(ih_idx+1))
         # And for non-processed and processed solutions:
         for input_results_array in ['ch1', 'ch2', 'ch5', 'ch3', 'ch4']:
@@ -64,10 +64,10 @@ if test_result == 0:
 
                     # Obtain the results
                     # try:
-                        # initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=6000, patience=100, tabu_thr=10)
+                    initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, max_iterations=5000, patience=100, tabu_thr=10)
                     
                     # except:
-                    initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=5000, hill_climbing_repetition_factor=1000)
+                    # initial_solution, initial_cost, final_solution, final_cost, history = ih(ch_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, use_processed_solution=boolean, random_seed=42, set_minimization_repetition_factor=5000, hill_climbing_repetition_factor=1000)
                     
 
                     # End time
