@@ -183,8 +183,10 @@ def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random
                 
 
                 # Now we should have neighbours (or not)
-                if len(neighbours) > 0:
+                if len(neighbours) >= 0:
                     # print("more than one neighbour", len(neighbours))
+                    # Small tweak to avoid loopholes
+                    new_solution = current_solution.copy()
                     valid_neighbours = True
         
 
@@ -470,7 +472,10 @@ def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random
                 
 
                 # Now we should have neighbours (or not)
-                if len(neighbours) > 0:
+                if len(neighbours) >= 0:
+                    # print("more than one neighbour", len(neighbours))
+                    # Small tweak to avoid loopholes
+                    new_solution = current_solution.copy()
                     valid_neighbours = True
         
 
