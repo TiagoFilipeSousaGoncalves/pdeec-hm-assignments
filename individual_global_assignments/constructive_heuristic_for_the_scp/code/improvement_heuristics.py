@@ -117,7 +117,7 @@ def ih1(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
@@ -405,7 +405,7 @@ def ih2(ch_results_array, scp_instances_dir, use_processed_solution=True, random
 
     # Begin algorithm
     while (nr_iteration <= max_iterations) and (nr_patience <= patience):
-        # print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
+        print("Iteration: {} | Patience: {}".format(nr_iteration, nr_patience))
         # Generate a neighbour-solution
         # Create a condition that decides that we have found a proper neighbour
         valid_neighbours = False
