@@ -7,7 +7,6 @@ import os
 from timeit import default_timer as timer
 
 # Custom Imports
-# from utilities import SCPInstance, ch1, ch2, ch3, ch4, ch5
 from improvement_heuristics import ih1, ih2, ih3, ih4
 from tests import test_SCPInstances
 
@@ -26,8 +25,7 @@ test_result = test_SCPInstances()
 # If we pass the test, we run everything
 if test_result == 0:
     # Run each IH for non-processed and processed solutions
-    # for ih_idx, ih in enumerate([ih1, ih2, ih3, ih4]):
-    for ih_idx, ih in enumerate([ih1]):
+    for ih_idx, ih in enumerate([ih1, ih2, ih3, ih4]):
         print("Current: IH{}".format(ih_idx+1))
         # And for non-processed and processed solutions:
         for input_results_array in ['ch1', 'ch2', 'ch5', 'ch3', 'ch4']:
