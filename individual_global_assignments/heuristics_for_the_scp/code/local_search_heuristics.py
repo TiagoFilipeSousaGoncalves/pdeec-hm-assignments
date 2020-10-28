@@ -103,6 +103,8 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
     # Current temperature
     current_temperature = initial_temperature
+    current_temperature_patience = 0
+    
     
 
     # Begin algorithm
