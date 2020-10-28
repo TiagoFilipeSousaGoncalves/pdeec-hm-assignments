@@ -24,8 +24,8 @@ test_result = test_SCPInstances()
 
 # If we pass the test, we run everything
 if test_result == 0:
-    # Run each SLH for non-processed and processed solutions
-    for lsh_idx, slh in enumerate([lsh1]):
+    # Run each lsh for non-processed and processed solutions
+    for lsh_idx, lsh in enumerate([lsh1]):
         print("Current: LSH{}".format(lsh_idx+1))
         # And for non-processed and processed solutions:
         for input_results_array in ['ih_1', 'ih_2', 'ih_3', 'ih_4']:
