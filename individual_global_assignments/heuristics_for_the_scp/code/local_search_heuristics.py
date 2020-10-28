@@ -180,12 +180,12 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
             
             # Update temperature
-            current_temperature =* cooling_ratio_alpha
+            current_temperature *= cooling_ratio_alpha
 
         
         else:
             if current_temperature_patience >= patience_temperature:
-                current_temperature =* cooling_ratio_alpha
+                current_temperature *= cooling_ratio_alpha
                 current_temperature_patience = 0
             else:
                 current_temperature_patience += 1
