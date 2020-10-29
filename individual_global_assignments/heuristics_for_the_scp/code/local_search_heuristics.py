@@ -162,11 +162,11 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
             candidate_neighbour_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in candidate_neighbour])
             
             # Now, evaluate costs
-            if candidate_neighbour_cost < current_cost:
+            if candidate_neighbour_cost <= current_cost:
                 current_solution = candidate_neighbour.copy()
                 current_cost = candidate_neighbour_cost
                 # Update temperature
-                print("Temperature decreased from {} to {}, by removal.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
                 print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
                 current_temperature *= cooling_ratio_alpha
 
@@ -179,11 +179,11 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
                 probability_of_the_neighbour = np.exp(-1 * ((current_cost-candidate_neighbour_cost) / current_temperature))
 
-                if proba_threshold <= probability_of_the_neighbour:
+                if proba_threshold < probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
                     # Update temperature
-                    print("Temperature decreased from {} to {}, by swap.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                    print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
                     print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
                     current_temperature *= cooling_ratio_alpha
 
