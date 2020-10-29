@@ -173,7 +173,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
             
             else:
                 # Probability threshold
-                probability_of_the_neighbour = np.exp(-1 * (abs((current_cost-candidate_neighbour_cost) / current_temperature))))
+                probability_of_the_neighbour = np.exp(-1 * (abs((current_cost-candidate_neighbour_cost) / current_temperature)))
                 if proba_threshold < probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
