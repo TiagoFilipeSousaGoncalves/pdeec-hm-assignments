@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, patience_temperature=10, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -166,6 +166,10 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
             if candidate_neighbour_cost < current_cost:
                 current_solution = candidate_neighbour.copy()
                 current_cost = candidate_neighbour_cost
+                # Update temperature
+                print("Temperature decreased from {} to {}, by removal.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                current_temperature *= cooling_ratio_alpha
+
             
             else:
                 # Probability threshold for choosing the new solution
@@ -178,19 +182,11 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 if proba_threshold < probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
+                    # Update temperature
+                    print("Temperature decreased from {} to {}, by swap.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                    current_temperature *= cooling_ratio_alpha
 
 
-            
-            # Update temperature
-            current_temperature *= cooling_ratio_alpha
-
-        
-        else:
-            if current_temperature_patience >= patience_temperature:
-                current_temperature *= cooling_ratio_alpha
-                current_temperature_patience = 0
-            else:
-                current_temperature_patience += 1
 
 
 
