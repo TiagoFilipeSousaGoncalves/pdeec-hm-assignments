@@ -103,7 +103,6 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
     # Current temperature
     current_temperature = initial_temperature
-    current_temperature_patience = 0
     
     
 
@@ -168,6 +167,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 current_cost = candidate_neighbour_cost
                 # Update temperature
                 print("Temperature decreased from {} to {}, by removal.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
                 current_temperature *= cooling_ratio_alpha
 
             
@@ -179,11 +179,12 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
                 probability_of_the_neighbour = np.exp(-1 * ((current_cost-candidate_neighbour_cost) / current_temperature))
 
-                if proba_threshold < probability_of_the_neighbour:
+                if proba_threshold <= probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
                     # Update temperature
                     print("Temperature decreased from {} to {}, by swap.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                    print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
                     current_temperature *= cooling_ratio_alpha
 
 
@@ -226,5 +227,12 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
     # Final
     final_solution = current_solution.copy()
     final_cost = current_cost.copy()
+    print("Initial Cost: {} | Final Cost: {}".format(initial_cost, final_cost))
 
     return initial_solution, initial_cost, final_solution, final_cost, history
+
+
+
+# LSH2: TBD
+def lsh2(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, tabu_thr=10):
+    pass
