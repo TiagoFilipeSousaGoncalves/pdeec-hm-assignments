@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=500, final_temperature=0.001, cooling_ratio_alpha=0.99, proba_threshold=0.50, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -172,13 +172,8 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
             
             else:
-                # Probability threshold for choosing the new solution
-                proba_threshold = np.linspace(start=0, stop=100, num=10, endpoint=False)
-                proba_threshold *= 0.01
-                proba_threshold = np.random.choice(a=proba_threshold)
-
-                probability_of_the_neighbour = np.exp(-1 * ((current_cost-candidate_neighbour_cost) / current_temperature))
-
+                # Probability threshold
+                probability_of_the_neighbour = np.exp(-1 * (abs((current_cost-candidate_neighbour_cost) / current_temperature))))
                 if proba_threshold < probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
