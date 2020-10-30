@@ -61,7 +61,7 @@ if test_result == 0:
                         results_array[scp_idx+1, 0] = scp_instance_results[0]
 
                         # Obtain the results
-                        initial_solution, initial_cost, final_solution, final_cost, history = lsh(ih_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir, random_seed=42, initial_temperature=500, final_temperature=0.001, cooling_ratio_alpha=0.99, proba_threshold=0.50, tabu_thr=10)
+                        initial_solution, initial_cost, final_solution, final_cost, history = lsh(ih_results_array=scp_instance_results, scp_instances_dir=scp_instances_dir)
                         
 
                         # End time

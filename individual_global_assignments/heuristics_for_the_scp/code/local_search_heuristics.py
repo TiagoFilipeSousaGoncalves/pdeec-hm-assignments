@@ -9,7 +9,7 @@ import os
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=500, final_temperature=0.001, cooling_ratio_alpha=0.99, proba_threshold=0.50, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=10, final_temperature=0.001, temperature_patience_thr=300, cooling_ratio_alpha=0.99, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -97,6 +97,9 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
     # Initialise number of iterations
     iteration = 1
 
+    # Initialise temperature patience
+    temperature_patience = 0
+
     # History: Save the Iteration and the Cost Value in that iteration to obtain good plots
     history = list()
     history.append([iteration, initial_cost, initial_temperature])
@@ -117,10 +120,10 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
             # Neighbours
             # Should we "swap or remove" to find a new neighbour?
-            swap_or_remove = np.random.choice(a=[0, 1])
+            swap_or_remove_or_insert = np.random.choice(a=[0, 1])
 
             # Option 1: All rows are covered and our previous redundancy routines had bugs or were not effective
-            if swap_or_remove == 0:
+            if swap_or_remove_or_insert == 0:
                 # If all the rows are covered this column is redundant!
                 candidate_neighbour = current_solution.copy()
                 candidate_neighbour.remove(swap_column)
@@ -128,8 +131,8 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 # print("removed column")
                 valid_neighbour = True
 
-            # Option 2: Hopefully, everything will happen here. We just have to generate a random neighbour
-            else:
+            # Option 2: It's a swap!
+            elif swap_or_remove_or_insert == 1:
                 # Check availability
                 candidate_neighbour_columns = list()
                 for col, col_avail in enumerate(columns_availability):
@@ -148,6 +151,28 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 candidate_neighbour.remove(swap_column)
                 candidate_neighbour.append(candidate_column)
                 valid_neighbour = True
+            
+            # Option 3: It's an insert!
+            # elif swap_or_remove_or_insert == 2:
+            #     # Check availability
+            #     candidate_neighbour_columns = list()
+            #     for col, col_avail in enumerate(columns_availability):
+            #         if col_avail == 1:
+            #             candidate_neighbour_columns.append(col)
+                
+            #     # Create a procedure to find a proper candidate column
+            #     candidate_column_found = False
+            #     while candidate_column_found != True:
+            #         candidate_column = np.random.choice(a=candidate_neighbour_columns)
+            #         if (tabu_columns[candidate_column] >= 0) and (tabu_columns[candidate_column] <= 10):
+            #             candidate_column_found = True
+                
+            #     # Generate candidate neighbour
+            #     candidate_neighbour = current_solution.copy()
+            #     # candidate_neighbour.remove(swap_column)
+            #     candidate_neighbour.append(candidate_column)
+            #     valid_neighbour = True
+
         
 
         # First check if all rows are coved
@@ -166,25 +191,32 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 current_solution = candidate_neighbour.copy()
                 current_cost = candidate_neighbour_cost
                 # Update temperature
-                print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-                print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
-                current_temperature *= cooling_ratio_alpha
+                # print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+                # current_temperature *= cooling_ratio_alpha
 
             
             else:
                 # Probability threshold
-                probability_of_the_neighbour = np.exp(-1 * (abs((current_cost-candidate_neighbour_cost) / current_temperature)))
+                probability_of_the_neighbour = np.exp(-1 * ((candidate_neighbour_cost - current_cost) / current_temperature))
+                proba_threshold = np.random.choice(a=np.arange(start=0, stop=1, step=0.1))
+                print(proba_threshold, probability_of_the_neighbour)
                 if proba_threshold < probability_of_the_neighbour:
                     current_solution = candidate_neighbour.copy()
                     current_cost = candidate_neighbour_cost
                     # Update temperature
-                    print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-                    print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
-                    current_temperature *= cooling_ratio_alpha
+                    # print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+                    # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+                    # current_temperature *= cooling_ratio_alpha
 
 
-
-
+        # Temperature update
+        if current_cost < initial_cost or temperature_patience >= temperature_patience_thr:
+            print(temperature_patience)
+            current_temperature *= cooling_ratio_alpha
+            temperature_patience = 0
+            print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+            print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
 
         # Updates
         # Columns Availability
@@ -218,6 +250,9 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         # History
         history.append([iteration, current_cost, current_temperature])
 
+        # Temperature Patience
+        temperature_patience += 1
+
 
     # Final
     final_solution = current_solution.copy()
@@ -228,6 +263,6 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
 
 
-# LSH2: TBD
+# LSH2: Local Search VNS/Hill Climber
 def lsh2(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, tabu_thr=10):
     pass
