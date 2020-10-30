@@ -4,12 +4,14 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import _pickle as cPickle
 import os
+import random
+import math
 
 # Import SCPInstance from Utilities
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=10, final_temperature=0.001, temperature_patience_thr=300, cooling_ratio_alpha=0.99, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.1, cooling_ratio_alpha=0.99, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -113,14 +115,16 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
     while current_temperature > final_temperature:
         # Select a random neighbour
         # Valid neighbour finding success variable
-        valid_neighbour = False
-        while valid_neighbour!=True:
+        valid_neighbour = list()
+
+        # Let's generate more neighbours at a time
+        while len(valid_neighbour) < 20:
             # We generate a possible candidate neighbour based on a swap
             swap_column = np.random.choice(a=current_solution)
 
             # Neighbours
             # Should we "swap or remove" to find a new neighbour?
-            swap_or_remove_or_insert = np.random.choice(a=[0, 1])
+            swap_or_remove_or_insert = np.random.choice(a=[0, 1, 2])
 
             # Option 1: All rows are covered and our previous redundancy routines had bugs or were not effective
             if swap_or_remove_or_insert == 0:
@@ -129,7 +133,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 candidate_neighbour.remove(swap_column)
                 # Therefore, we found a valid neighbour solution
                 # print("removed column")
-                valid_neighbour = True
+                valid_neighbour.append(candidate_neighbour)
 
             # Option 2: It's a swap!
             elif swap_or_remove_or_insert == 1:
@@ -150,73 +154,74 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 candidate_neighbour = current_solution.copy()
                 candidate_neighbour.remove(swap_column)
                 candidate_neighbour.append(candidate_column)
-                valid_neighbour = True
+                valid_neighbour.append(candidate_neighbour)
             
             # Option 3: It's an insert!
-            # elif swap_or_remove_or_insert == 2:
-            #     # Check availability
-            #     candidate_neighbour_columns = list()
-            #     for col, col_avail in enumerate(columns_availability):
-            #         if col_avail == 1:
-            #             candidate_neighbour_columns.append(col)
+            elif swap_or_remove_or_insert == 2:
+                 # Check availability
+                 candidate_neighbour_columns = list()
+                 for col, col_avail in enumerate(columns_availability):
+                     if col_avail == 1:
+                         candidate_neighbour_columns.append(col)
                 
-            #     # Create a procedure to find a proper candidate column
-            #     candidate_column_found = False
-            #     while candidate_column_found != True:
-            #         candidate_column = np.random.choice(a=candidate_neighbour_columns)
-            #         if (tabu_columns[candidate_column] >= 0) and (tabu_columns[candidate_column] <= 10):
-            #             candidate_column_found = True
+                 # Create a procedure to find a proper candidate column
+                 candidate_column_found = False
+                 while candidate_column_found != True:
+                     candidate_column = np.random.choice(a=candidate_neighbour_columns)
+                     if (tabu_columns[candidate_column] >= 0) and (tabu_columns[candidate_column] <= 10):
+                         candidate_column_found = True
                 
-            #     # Generate candidate neighbour
-            #     candidate_neighbour = current_solution.copy()
-            #     # candidate_neighbour.remove(swap_column)
-            #     candidate_neighbour.append(candidate_column)
-            #     valid_neighbour = True
+                # Generate candidate neighbour
+                 candidate_neighbour = current_solution.copy()
+                 # candidate_neighbour.remove(swap_column)
+                 candidate_neighbour.append(candidate_column)
+                 valid_neighbour.append(candidate_neighbour)
 
         
 
-        # First check if all rows are coved
-        rows_covered_by_neighbour = [0 for i in range(problem_matrix.shape[0])]
-        for row, _ in enumerate(rows_covered_by_neighbour):
-            for col in candidate_neighbour:
-                if problem_matrix[row, col] == 1:
-                    rows_covered_by_neighbour[row] = 1
+        # First check if all neighbours keep universitality
+        possible_neighbours = list()
+        for neigh_idx, neigh in enumerate(valid_neighbour):
+            rows_covered_by_neighbour = [0 for i in range(problem_matrix.shape[0])]
+            for row, _ in enumerate(rows_covered_by_neighbour):
+                for col in neigh:
+                    if problem_matrix[row, col] == 1:
+                        rows_covered_by_neighbour[row] = 1
+            if int(np.sum(rows_covered_by_neighbour)) == int(problem_matrix.shape[0]):
+                possible_neighbours.append(neigh)
         
-        # The sum must be equal to the number of rows to go to the next step (check the universitality of the solution)
-        if int(np.sum(rows_covered_by_neighbour)) == int(problem_matrix.shape[0]):
-            candidate_neighbour_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in candidate_neighbour])
+        # We have possible neighbours! (check the universitality of the solution)
+        if len(possible_neighbours) > 0:
+            possible_neighbours_costs = list()
+            for neigh in possible_neighbours:
+                neigh_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in neigh])
+                possible_neighbours.append(neigh_cost)
+            
+            # We choose the best neighbour
+            best_neighbour = possible_neighbours[np.argmin(possible_neighbours_costs)]
+            best_neighbour_cost = possible_neighbours_costs[np.argmin(possible_neighbours_costs)]
+
+            cost_difference = current_cost - best_neighbour_cost
             
             # Now, evaluate costs
-            if candidate_neighbour_cost <= current_cost:
-                current_solution = candidate_neighbour.copy()
-                current_cost = candidate_neighbour_cost
-                # Update temperature
-                # print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-                # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
-                # current_temperature *= cooling_ratio_alpha
+            if cost_difference > current_cost:
+                current_solution = best_neighbour.copy()
+                current_cost = best_neighbour_cost
 
             
             else:
                 # Probability threshold
-                probability_of_the_neighbour = np.exp(-1 * ((candidate_neighbour_cost - current_cost) / current_temperature))
-                proba_threshold = np.random.choice(a=np.arange(start=0, stop=1, step=0.1))
-                print(proba_threshold, probability_of_the_neighbour)
-                if proba_threshold < probability_of_the_neighbour:
-                    current_solution = candidate_neighbour.copy()
-                    current_cost = candidate_neighbour_cost
-                    # Update temperature
-                    # print("Temperature decreased/stopped from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-                    # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
-                    # current_temperature *= cooling_ratio_alpha
+                if random.uniform(0, 1) < math.exp(cost_difference / current_temperature):
+                    current_solution = best_neighbour.copy()
+                    current_cost = best_neighbour_cost
 
 
         # Temperature update
-        if current_cost < initial_cost or temperature_patience >= temperature_patience_thr:
-            print(temperature_patience)
-            current_temperature *= cooling_ratio_alpha
-            temperature_patience = 0
-            print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-            print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+        # rint(temperature_patience)
+        current_temperature *= cooling_ratio_alpha
+        # temperature_patience = 0
+        # print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
+        print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
 
         # Updates
         # Columns Availability
@@ -231,7 +236,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         for col, col_tabu in enumerate(tabu_columns):
             if col in current_solution:
                 tabu_columns[col] = -1
-            else:
+            elif col in best_neighbour and col not in current_solution:
                 tabu_columns[col] += 1
                 if tabu_columns[col] == tabu_thr:
                     tabu_columns[col] = 0
