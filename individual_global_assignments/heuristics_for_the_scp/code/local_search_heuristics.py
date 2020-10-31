@@ -11,7 +11,7 @@ import math
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.1, cooling_ratio_alpha=0.99, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.01, cooling_ratio_alpha=0.99, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -118,7 +118,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         valid_neighbour = list()
 
         # Let's generate more neighbours at a time
-        while len(valid_neighbour) < 20:
+        while len(valid_neighbour) < (2 * problem_matrix.shape[1]):
             # We generate a possible candidate neighbour based on a swap
             swap_column = np.random.choice(a=current_solution)
 
@@ -181,21 +181,31 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
         # First check if all neighbours keep universitality
         possible_neighbours = list()
-        for neigh_idx, neigh in enumerate(valid_neighbour):
+        for _, neigh in enumerate(valid_neighbour):
+            # print(neigh)
             rows_covered_by_neighbour = [0 for i in range(problem_matrix.shape[0])]
             for row, _ in enumerate(rows_covered_by_neighbour):
                 for col in neigh:
                     if problem_matrix[row, col] == 1:
                         rows_covered_by_neighbour[row] = 1
             if int(np.sum(rows_covered_by_neighbour)) == int(problem_matrix.shape[0]):
-                possible_neighbours.append(neigh)
+                possible_neighbours.append(list(neigh))
         
         # We have possible neighbours! (check the universitality of the solution)
         if len(possible_neighbours) > 0:
+            # print(possible_neighbours, len(possible_neighbours))
             possible_neighbours_costs = list()
-            for neigh in possible_neighbours:
-                neigh_cost = np.sum([scp_instance.scp_instance_column_costs[col] for col in neigh])
-                possible_neighbours.append(neigh_cost)
+            for _, neighbour in enumerate(possible_neighbours):
+                # print(len(neigh))
+                neigh_cost = list()
+                # print(n)
+                if isinstance(neighbour, list):
+                    for c in neighbour:
+                        # print(c)
+                        neigh_cost.append(scp_instance.scp_instance_column_costs[c])
+                    neigh_cost = np.sum(neigh_cost)
+                    # print(neigh_cost)
+                    possible_neighbours_costs.append(neigh_cost)
             
             # We choose the best neighbour
             best_neighbour = possible_neighbours[np.argmin(possible_neighbours_costs)]
@@ -222,6 +232,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         # temperature_patience = 0
         # print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
         print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+        print("Current temperature: {}".format(current_temperature))
 
         # Updates
         # Columns Availability
