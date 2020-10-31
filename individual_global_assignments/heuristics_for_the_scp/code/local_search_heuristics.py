@@ -11,7 +11,7 @@ import math
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=10, final_temperature=0.01, cooling_ratio_alpha=0.99, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=10, final_temperature=0.01, cooling_ratio_alpha=0.99, tabu_thr=10, patience=30):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -110,11 +110,10 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
     # Current temperature
     current_temperature = initial_temperature
+    current_patience = 0
     
-    
-
     # Begin algorithm
-    while current_temperature > final_temperature:
+    while (current_temperature > final_temperature) and (current_patience < patience):
         # Select a random neighbour
         # Valid neighbour finding success variable
         valid_neighbour = list()
@@ -232,14 +231,16 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         if current_cost < best_cost:
             best_cost = current_cost.copy()
             best_solution = current_solution.copy()
+            current_patience = 0
+        
+        else:
+            current_patience += 1
 
         # Temperature update
-        # rint(temperature_patience)
         print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
         current_temperature *= cooling_ratio_alpha
-        # temperature_patience = 0
         print("Initial Cost: {} | Current Cost: {} | Best Cost: {}".format(initial_cost, current_cost, best_cost))
-        # print("Current temperature: {}".format(current_temperature))
+        print("Current Patience: {} | Max Patience: {}".format(current_patience, patience))
 
         # Updates
         # Columns Availability
