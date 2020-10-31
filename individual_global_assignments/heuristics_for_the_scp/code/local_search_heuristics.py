@@ -249,7 +249,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                 tabu_columns[col] = -1
             elif col in best_neighbour and col not in current_solution:
                 tabu_columns[col] += 1
-                if tabu_columns[col] == tabu_thr:
+                if tabu_columns[col] == 2 * tabu_thr:
                     tabu_columns[col] = 0
 
         
@@ -280,5 +280,103 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
 
 # LSH2: Local Search VNS/Hill Climber
-def lsh2(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.001, cooling_ratio_alpha=0.99, tabu_thr=10):
-    pass
+def lsh2(ih_results_array, scp_instances_dir, random_seed=42, tabu_thr=10):
+    
+    # Set Numpy random seed
+    np.random.seed(seed=random_seed)
+    
+    # Read the array information
+    # SCP Instance Filename is at index 0
+    scp_instance_filename = ih_results_array[0]
+
+    # Processed Solution is at index 3
+    initial_solution = ih_results_array[3]
+
+    # Processed Cost is at index 4
+    initial_cost = ih_results_array[4]
+    
+
+
+    # Get the SCP Instance
+    scp_instance_path = os.path.join(scp_instances_dir, scp_instance_filename)
+
+    # Load the SCP Instance Object
+    scp_instance = SCPInstance(scp_instance_filename=scp_instance_path)
+
+    # Build Row X Column Matrix
+    problem_matrix = np.zeros((scp_instance.scp_number_of_rows, scp_instance.scp_number_of_columns), dtype=int)
+    # Fill Problem Matrix
+    for row_idx, row in enumerate(scp_instance.scp_instance_all_rows):
+        for column in row:
+            problem_matrix[row_idx, column-1] = 1
+    
+    
+    # Variables in Memory: We create several memory variables that will be useful through the algorithm
+    # Columns Availability: Variable To Use in Flips/Swaps, 1 if available, 0 if not available
+    columns_availability = [1 for i in range(problem_matrix.shape[1])]
+    for col in initial_solution:
+        columns_availability[col] = 0
+
+    
+    # Rows Availability: Variable to check for rows that are covered/not covered 1 if covered, 0 if not covered
+    rows_availability = [1 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_availability):
+        if np.sum(problem_matrix[row_idx, :]) == 0:
+            rows_availability[row_idx] = 0
+    
+    
+    # Rows Frequency Problem: Number of Times Each Row Appears in the Problem Matrix
+    rows_freq_problem = [0 for i in range(problem_matrix.shape[0])]
+    for row_idx, _ in enumerate(rows_freq_problem):
+        rows_freq_problem[row_idx] = np.sum(problem_matrix[row_idx, :])
+
+
+    # Rows Frequency Solution: Number of Times Each Row Appears in the Solution
+    rows_freq_solution = [0 for i in range(problem_matrix.shape[0])]
+    for col in initial_solution:
+        for row_idx, _ in enumerate(rows_freq_solution):
+            rows_freq_solution[row_idx] += problem_matrix[row_idx, col]
+    
+
+    # Column Frequency: Number of Times Each Column Appears in the Problem Matrix
+    column_freq_problem = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(column_freq_problem):
+        column_freq_problem[col_idx] = np.sum(problem_matrix[:, col_idx])
+
+    
+    # Tabu Search for Columnns: Columns in the solution begin with value -1, the rest with 0; until the value of tabu_thr the column is usable
+    tabu_columns = [0 for i in range(problem_matrix.shape[1])]
+    for col_idx, _ in enumerate(tabu_columns):
+        if col_idx in initial_solution:
+            tabu_columns[col_idx] = -1
+    
+
+    # Initialise variables
+    # Current solution
+    current_solution = initial_solution.copy()
+    
+    # Current cost
+    current_cost = 0
+    for col in current_solution:
+        current_cost += scp_instance.scp_instance_column_costs[col]
+
+    # If current cost is different from the processed cost, we will take this last into account
+    if current_cost != initial_cost:
+        initial_cost = current_cost
+    
+
+    # Initialise number of iterations
+    iteration = 1
+
+    # History: Save the Iteration and the Cost Value in that iteration to obtain good plots
+    history = list()
+    history.append([iteration, initial_cost, initial_temperature])
+    
+    
+
+    # Begin algorithm
+    
+    
+    
+    
+    return initial_solution, initial_cost, final_solution, final_cost
