@@ -231,8 +231,8 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         current_temperature *= cooling_ratio_alpha
         # temperature_patience = 0
         # print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-        print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
-        print("Current temperature: {}".format(current_temperature))
+        # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+        # print("Current temperature: {}".format(current_temperature))
 
         # Updates
         # Columns Availability
