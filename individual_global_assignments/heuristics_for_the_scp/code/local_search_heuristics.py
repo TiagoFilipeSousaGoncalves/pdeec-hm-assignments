@@ -11,7 +11,7 @@ import math
 from utilities import SCPInstance
 
 # LSH1: Simulated Annealing (We add a patience and a tabu procedure)
-def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=1000, final_temperature=0.01, cooling_ratio_alpha=0.99, tabu_thr=10):
+def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperature=10, final_temperature=0.01, cooling_ratio_alpha=0.99, tabu_thr=10):
 
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -96,11 +96,13 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         initial_cost = current_cost
     
 
+
+    # Initialise best solution and best cost
+    best_solution = initial_solution.copy()
+    best_cost = initial_cost.copy()
+
     # Initialise number of iterations
     iteration = 1
-
-    # Initialise temperature patience
-    temperature_patience = 0
 
     # History: Save the Iteration and the Cost Value in that iteration to obtain good plots
     history = list()
@@ -118,7 +120,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         valid_neighbour = list()
 
         # Let's generate more neighbours at a time
-        while len(valid_neighbour) < (2 * problem_matrix.shape[1]):
+        while len(valid_neighbour) < (3 * problem_matrix.shape[1]):
             # We generate a possible candidate neighbour based on a swap
             swap_column = np.random.choice(a=current_solution)
 
@@ -226,12 +228,17 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
                     current_cost = best_neighbour_cost
 
 
+        # Update Best Solution Found
+        if current_cost < best_cost:
+            best_cost = current_cost.copy()
+            best_solution = current_solution.copy()
+
         # Temperature update
         # rint(temperature_patience)
+        print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
         current_temperature *= cooling_ratio_alpha
         # temperature_patience = 0
-        # print("Temperature decreased from {} to {}.".format(current_temperature, current_temperature*cooling_ratio_alpha))
-        # print("Initial Cost: {} | Current Cost: {}".format(initial_cost, current_cost))
+        print("Initial Cost: {} | Current Cost: {} | Best Cost: {}".format(initial_cost, current_cost, best_cost))
         # print("Current temperature: {}".format(current_temperature))
 
         # Updates
@@ -266,13 +273,10 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
         # History
         history.append([iteration, current_cost, current_temperature])
 
-        # Temperature Patience
-        temperature_patience += 1
-
 
     # Final
-    final_solution = current_solution.copy()
-    final_cost = current_cost.copy()
+    final_solution = best_solution.copy()
+    final_cost = best_cost.copy()
     print("Initial Cost: {} | Final Cost: {}".format(initial_cost, final_cost))
 
     return initial_solution, initial_cost, final_solution, final_cost, history
