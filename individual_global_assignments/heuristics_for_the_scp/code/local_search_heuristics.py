@@ -284,7 +284,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
 
 
 # LSH2: General Variable Neighboord Search
-def lsh2(ih_results_array, scp_instances_dir, random_seed=42, k_max=5, l_max=5):
+def lsh2(ih_results_array, scp_instances_dir, random_seed=42, k_max=10, l_max=10):
     
     # Set Numpy random seed
     np.random.seed(seed=random_seed)
@@ -378,10 +378,10 @@ def lsh2(ih_results_array, scp_instances_dir, random_seed=42, k_max=5, l_max=5):
     # Iterate through Nk, k in [1, ..., k_max]
     k = 0
     while k < k_max:
-        print("Current k: {} | k_max {}".format(k, k_max))
+        print("Current k: {} | k_max: {}".format(k, k_max))
         # Generate Nk neighbourhood
         Nk_neighbourhood = list()
-        while len(Nk_neighbourhood) < (2 * problem_matrix.shape[1]):
+        while len(Nk_neighbourhood) < (3 * problem_matrix.shape[1]):
             # We generate a possible candidate neighbour based on a swap
             swap_column = np.random.choice(a=current_solution)
 
@@ -460,7 +460,7 @@ def lsh2(ih_results_array, scp_instances_dir, random_seed=42, k_max=5, l_max=5):
             print("Current l: {} | l_max: {}".format(l, l_max))
             Nl_neighbourhood = list()
             # Let's create the Nl_neighbourhood
-            while len(Nl_neighbourhood) < (2 * problem_matrix.shape[1]):
+            while len(Nl_neighbourhood) < (3 * problem_matrix.shape[1]):
                 # We generate a possible candidate neighbour based on a swap (it's the neighbourhood of Nk_solution!)
                 swap_column = np.random.choice(a=Nk_solution)
 
@@ -544,9 +544,9 @@ def lsh2(ih_results_array, scp_instances_dir, random_seed=42, k_max=5, l_max=5):
         
 
         # Now compare the current Nk_solution against the current solution
-        if Nk_cost < current_cost:
-            current_solution = Nk_solution.copy()
-            current_cost = Nk_cost.copy()
+        if Nl_cost < current_cost:
+            current_solution = Nl_solution.copy()
+            current_cost = Nl_cost.copy()
 
             if current_cost < best_cost:
                 best_solution = current_solution.copy()
