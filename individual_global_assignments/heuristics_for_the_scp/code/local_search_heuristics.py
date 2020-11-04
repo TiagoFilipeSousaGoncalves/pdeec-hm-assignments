@@ -215,7 +215,7 @@ def lsh1(ih_results_array, scp_instances_dir, random_seed=42, initial_temperatur
             cost_difference = current_cost - best_neighbour_cost
             
             # Now, evaluate costs
-            if cost_difference > current_cost:
+            if cost_difference > 0:
                 current_solution = best_neighbour.copy()
                 current_cost = best_neighbour_cost
 
