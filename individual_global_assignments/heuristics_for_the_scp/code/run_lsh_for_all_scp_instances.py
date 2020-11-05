@@ -7,7 +7,7 @@ import os
 from timeit import default_timer as timer
 
 # Custom Imports
-from local_search_heuristics import lsh1
+from local_search_heuristics import lsh1, lsh2
 from tests import test_SCPInstances
 
 # Directories
@@ -25,7 +25,7 @@ test_result = test_SCPInstances()
 # If we pass the test, we run everything
 if test_result == 0:
     # Run each lsh for non-processed and processed solutions
-    for lsh_idx, lsh in enumerate([lsh1]):
+    for lsh_idx, lsh in enumerate([lsh1, lsh2]):
         print("Current: LSH{}".format(lsh_idx+1))
         # And for non-processed and processed solutions:
         for input_results_array in ['ih_1', 'ih_2', 'ih_3', 'ih_4']:
